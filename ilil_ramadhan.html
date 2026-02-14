@@ -1,0 +1,1501 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Keripik iLiL — Ramadhan Edition (Glass + Parallax + Three.js)</title>
+  <meta name="description" content="Template landing one-page bertema Ramadhan: glassmorphism, parallax, dan hero Three.js (pakai asset produk asli)." />
+
+  <style>
+    :root{
+      /* ===== RAMADHAN PALETTE ===== */
+      --night0:#050812;        /* deep night */
+      --night1:#071a2d;        /* indigo */
+      --emerald:#0ea56b;       /* hijau */
+      --emerald2:#2de09a;      /* hijau terang */
+      --gold:#ffd67a;          /* emas */
+      --gold2:#ffb24a;         /* emas hangat */
+      --ink: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.68);
+
+      --glass: rgba(255,255,255,.08);
+      --glass2: rgba(255,255,255,.12);
+      --stroke: rgba(255,255,255,.18);
+
+      --shadow: 0 18px 60px rgba(0,0,0,.50);
+      --radius: 20px;
+      --radius2: 28px;
+      --max: 1160px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(45,224,154,.14), transparent 60%),
+        radial-gradient(900px 600px at 85% 30%, rgba(255,214,122,.10), transparent 55%),
+        radial-gradient(1100px 760px at 55% 90%, rgba(14,165,107,.10), transparent 60%),
+        linear-gradient(180deg, var(--night0), var(--night1));
+      overflow-x:hidden;
+    }
+
+    /* ===== RAMADHAN ORNAMENT LAYER ===== */
+    .ramadhan-sky{
+      position:fixed; inset:0; z-index:-3; pointer-events:none; overflow:hidden;
+      background:
+        radial-gradient(closest-side at 50% 30%, rgba(255,255,255,.06), transparent 58%),
+        radial-gradient(closest-side at 20% 70%, rgba(14,165,107,.10), transparent 60%),
+        radial-gradient(closest-side at 85% 75%, rgba(255,214,122,.08), transparent 65%),
+        radial-gradient(closest-side at 50% 50%, transparent 62%, rgba(0,0,0,.48) 100%);
+      mix-blend-mode: overlay;
+      opacity:.9;
+      filter: blur(.2px);
+    }
+
+    /* Subtle arabesque pattern (SVG) */
+    .pattern{
+      position:fixed; inset:-20%; z-index:-2; pointer-events:none;
+      opacity:.08;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='360' viewBox='0 0 360 360'%3E%3Cg fill='none' stroke='%23FFFFFF' stroke-opacity='.55' stroke-width='1'%3E%3Cpath d='M180 20c44 0 80 36 80 80s-36 80-80 80-80-36-80-80 36-80 80-80Z'/%3E%3Cpath d='M180 180c44 0 80 36 80 80s-36 80-80 80-80-36-80-80 36-80 80-80Z'/%3E%3Cpath d='M20 180c0-44 36-80 80-80s80 36 80 80-36 80-80 80-80-36-80-80Z'/%3E%3Cpath d='M180 180c0-44 36-80 80-80s80 36 80 80-36 80-80 80-80-36-80-80Z'/%3E%3Cpath d='M180 60c66 0 120 54 120 120S246 300 180 300 60 246 60 180 114 60 180 60Z'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: 360px 360px;
+      transform: translate3d(0,0,0);
+    }
+
+    /* ===== Film grain (cinematic) ===== */
+    .grain{
+      position:fixed; inset:-20%; z-index:-1; pointer-events:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+      opacity:.09;
+      mix-blend-mode: soft-light;
+      animation: grainMove 10s steps(10) infinite;
+    }
+    @keyframes grainMove{
+      0%{transform:translate3d(-2%, -2%,0)}
+      20%{transform:translate3d(2%, -3%,0)}
+      40%{transform:translate3d(-1%, 2%,0)}
+      60%{transform:translate3d(3%, 1%,0)}
+      80%{transform:translate3d(-3%, 1%,0)}
+      100%{transform:translate3d(-2%, -2%,0)}
+    }
+
+    /* ===== Parallax ornaments (lantern + stars) ===== */
+    .parallax{
+      position:fixed; inset:0; z-index:-4; pointer-events:none; overflow:hidden;
+    }
+
+    /* star */
+    .star{
+      position:absolute;
+      width:6px; height:6px;
+      border-radius:999px;
+      background: radial-gradient(circle, rgba(255,255,255,.95), rgba(255,255,255,0) 65%);
+      opacity:.22;
+      filter: drop-shadow(0 0 14px rgba(255,255,255,.30));
+      transform: translate3d(0,0,0);
+      will-change: transform, opacity;
+    }
+
+    /* lantern as SVG background */
+    :root{
+      --lantern-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='360' viewBox='0 0 280 360'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='30%25' r='70%25'%3E%3Cstop offset='0%25' stop-color='%23fff2c9' stop-opacity='.95'/%3E%3Cstop offset='45%25' stop-color='%23ffd67a' stop-opacity='.92'/%3E%3Cstop offset='100%25' stop-color='%23ffb24a' stop-opacity='.70'/%3E%3C/radialGradient%3E%3ClinearGradient id='m' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ffffff' stop-opacity='.25'/%3E%3Cstop offset='1' stop-color='%23000000' stop-opacity='.25'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M140 18c10 14 20 22 30 26l-6 14h-48l-6-14c10-4 20-12 30-26Z' fill='%23ffd67a'/%3E%3Cpath d='M90 76h100l18 44-14 30v128l14 30-18 44H90l-18-44 14-30V150l-14-30 18-44Z' fill='url(%23g)'/%3E%3Cpath d='M90 76h100l18 44H72l18-44Z' fill='rgba(255,255,255,.18)'/%3E%3Cpath d='M86 150h108v128H86V150Z' fill='url(%23m)'/%3E%3Cg stroke='%23000000' stroke-opacity='.28'%3E%3Cpath d='M90 76h100l18 44-14 30v128l14 30-18 44H90l-18-44 14-30V150l-14-30 18-44Z' fill='none'/%3E%3Cpath d='M86 150h108'/%3E%3Cpath d='M86 278h108'/%3E%3C/g%3E%3Ccircle cx='140' cy='122' r='8' fill='rgba(255,255,255,.25)'/%3E%3Cpath d='M140 44v24' stroke='%23ffd67a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
+    }
+
+    .lantern{
+      position:absolute;
+      width:220px; height:280px;
+      background-image: var(--lantern-svg);
+      background-size: contain;
+      background-repeat:no-repeat;
+      opacity:.14;
+      filter: drop-shadow(0 18px 40px rgba(0,0,0,.55));
+      transform: translate3d(0,0,0);
+      will-change: transform;
+      mix-blend-mode: screen;
+    }
+
+    /* mosque silhouette at bottom */
+    .mosque{
+      position:fixed;
+      left:0; right:0; bottom:-2px;
+      height: 220px;
+      z-index:-2;
+      pointer-events:none;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.35)),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1440' height='220' viewBox='0 0 1440 220'%3E%3Cpath fill='%23020610' fill-opacity='.85' d='M0 220V140h60v-20l40-30 40 30v20h50V95l70-40 70 40v45h40v-30l30-20 30 20v30h65V120l65-55 65 55v20h55V90l80-50 80 50v50h70v-20l40-30 40 30v20h50V95l70-40 70 40v45h40v-30l30-20 30 20v30h65V220H0z'/%3E%3Cpath fill='%23060f1b' fill-opacity='.55' d='M0 220V165h90v-10l30-22 30 22v10h60v-50l60-34 60 34v50h70v-16l30-18 30 18v16h130v-35l70-58 70 58v35h110v-50l70-40 70 40v50h90v-10l30-22 30 22v10h60v-50l60-34 60 34v50h70v-16l30-18 30 18v16h130V220H0z'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: bottom;
+      opacity:.92;
+      filter: blur(.2px);
+    }
+
+    /* ===== Layout ===== */
+    .container{width:min(var(--max), calc(100% - 40px)); margin:0 auto;}
+    .section{position:relative; padding:92px 0;}
+    .section.compact{padding:72px 0;}
+    .section-title{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:18px;
+      margin-bottom:22px;
+    }
+    .section-title h2{margin:0; letter-spacing:.4px; font-size: clamp(22px, 2.6vw, 34px);}
+    .section-title p{margin:0; color:var(--muted); max-width:60ch}
+
+    /* ===== Glass UI ===== */
+    .glass{
+      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: var(--radius2);
+    }
+    .card{padding: 18px; border-radius: var(--radius);}
+
+    /* ===== Buttons ===== */
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      color: var(--ink);
+      text-decoration:none;
+      cursor:pointer;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease, opacity .18s ease, filter .18s ease;
+      user-select:none;
+      font-weight:800;
+      letter-spacing:.15px;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.26); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(255,214,122,.95), rgba(255,178,74,.92));
+      color:#15110a;
+      border-color: rgba(255,255,255,.25);
+      filter: drop-shadow(0 14px 26px rgba(255,214,122,.10));
+    }
+    .btn.primary:hover{ opacity:.96; filter: drop-shadow(0 16px 28px rgba(255,214,122,.16)); }
+
+    .btn.whatsapp{
+      background: linear-gradient(135deg, rgba(37,211,102,.90), rgba(18,140,126,.86));
+      color:#07140c;
+      border-color: rgba(255,255,255,.22);
+    }
+    .btn.market{
+      background: linear-gradient(135deg, rgba(14,165,107,.92), rgba(45,224,154,.86));
+      color:#04110a;
+      border-color: rgba(255,255,255,.22);
+    }
+    .btn.ghost{ background: rgba(255,255,255,.06); }
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .dot{width:8px;height:8px;border-radius:99px;background:var(--gold); box-shadow:0 0 18px rgba(255,214,122,.55);}
+
+    /* ===== Navbar ===== */
+    .nav{position:sticky; top:14px; z-index:50; margin: 14px auto 0;}
+    .nav-inner{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 12px 14px;
+      border-radius: 18px;
+    }
+    .brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink);}
+    .brand strong{letter-spacing:.3px}
+    .brand img{width:40px;height:40px;object-fit:contain;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);padding:6px}
+    .nav-links{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+    .nav-links a{
+      color: var(--muted);
+      text-decoration:none;
+      font-weight:800;
+      font-size: 13px;
+      letter-spacing:.2px;
+      padding: 10px 10px;
+      border-radius: 12px;
+      transition: background .18s ease, color .18s ease;
+    }
+    .nav-links a:hover{ color: var(--ink); background: rgba(255,255,255,.06); }
+    .nav-links a.active{ color: rgba(255,255,255,.92); background: rgba(255,214,122,.10); border:1px solid rgba(255,214,122,.20); }
+
+    .nav-actions{display:flex; align-items:center; gap:10px;}
+    .cart-pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      cursor:pointer;
+      user-select:none;
+      transition: transform .18s ease, background .18s ease;
+    }
+    .cart-pill:hover{transform: translateY(-1px); background: rgba(255,255,255,.09);}
+    .cart-count{
+      min-width:20px;
+      padding:2px 7px;
+      border-radius:999px;
+      background: rgba(255,214,122,.96);
+      color:#15110a;
+      font-weight:900;
+      font-size:12px;
+    }
+
+    /* ===== Hero ===== */
+    .hero{padding-top: 22px; padding-bottom: 64px;}
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 22px;
+      align-items:stretch;
+      margin-top: 14px;
+    }
+    .hero-copy{
+      padding: 22px;
+      border-radius: var(--radius2);
+      min-height: 460px;
+      position:relative;
+      overflow:hidden;
+      transform-style: preserve-3d;
+    }
+    .hero-copy::before{
+      content:"";
+      position:absolute; inset:-40%;
+      background:
+        radial-gradient(closest-side, rgba(45,224,154,.16), transparent 70%),
+        radial-gradient(closest-side, rgba(255,214,122,.14), transparent 70%),
+        radial-gradient(closest-side, rgba(255,255,255,.06), transparent 72%);
+      filter: blur(20px);
+      opacity:.95;
+      transform: translate3d(0,0,0);
+    }
+    .hero-copy > *{position:relative; z-index:1}
+
+    .hero h1{
+      margin: 10px 0 10px;
+      font-size: clamp(34px, 4.2vw, 58px);
+      letter-spacing:.2px;
+      line-height: 1.02;
+    }
+    .hero p{color: var(--muted); max-width: 62ch; margin: 0 0 18px; line-height: 1.7;}
+    .hero-cta{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top: 12px;}
+    .hero-note{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;}
+
+    .hero-right{
+      border-radius: var(--radius2);
+      overflow:hidden;
+      position:relative;
+      min-height: 460px;
+      transform-style: preserve-3d;
+    }
+    .hero-right::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(closest-side at 50% 35%, rgba(255,214,122,.18), transparent 58%),
+                  radial-gradient(closest-side at 70% 70%, rgba(45,224,154,.14), transparent 60%);
+      filter: blur(18px);
+      pointer-events:none;
+      opacity:.92;
+    }
+    #threeWrap{
+      position:absolute; inset:0;
+      background: radial-gradient(900px 420px at 40% 30%, rgba(255,255,255,.10), transparent 55%),
+                  radial-gradient(700px 340px at 70% 70%, rgba(45,224,154,.10), transparent 60%),
+                  radial-gradient(620px 320px at 20% 80%, rgba(255,214,122,.10), transparent 60%),
+                  rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.16);
+    }
+    canvas#three{width:100% !important; height:100% !important; display:block;}
+
+    .three-overlay{
+      position:absolute; inset:auto 14px 14px 14px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding: 12px 12px;
+      border-radius: 18px;
+    }
+    .three-overlay small{color:var(--muted); line-height:1.4}
+    .kbd{
+      padding: 6px 10px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.18);
+      font-weight:800;
+      letter-spacing:.3px;
+      font-size:12px;
+      color: rgba(255,255,255,.88);
+    }
+
+    /* ===== About ===== */
+    .about-grid{display:grid; grid-template-columns: 1.1fr .9fr; gap: 18px; align-items: start;}
+    .about-copy{padding:20px}
+    .about-stats{display:grid; grid-template-columns: 1fr 1fr; gap: 12px;}
+    .stat{
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.12);
+      position:relative;
+      overflow:hidden;
+    }
+    .stat::before{
+      content:"";
+      position:absolute; inset:-40%;
+      background: radial-gradient(closest-side, rgba(255,214,122,.14), transparent 65%);
+      filter: blur(18px);
+      opacity:.55;
+    }
+    .stat > *{position:relative}
+    .stat strong{display:block; font-size: 22px; letter-spacing:.2px;}
+    .stat span{color:var(--muted); font-size: 12px}
+
+    /* ===== Products ===== */
+    .product-grid{display:grid; grid-template-columns: repeat(6, 1fr); gap: 12px;}
+    .product{
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      position:relative;
+      min-height: 270px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      transform-style: preserve-3d;
+      transition: transform .22s ease, border-color .22s ease, background .22s ease, filter .22s ease;
+      will-change: transform;
+    }
+    .product::before{
+      content:"";
+      position:absolute; inset:-60%;
+      background: radial-gradient(closest-side, var(--glow, rgba(255,214,122,.18)), transparent 60%);
+      filter: blur(22px);
+      opacity:.75;
+      pointer-events:none;
+    }
+    .product:hover{
+      border-color: rgba(255,255,255,.22);
+      background: rgba(255,255,255,.06);
+      filter: drop-shadow(0 18px 34px rgba(0,0,0,.35));
+    }
+
+    .thumb{
+      height: 106px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.03);
+      overflow:hidden;
+      transform: translateZ(18px);
+    }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      border-radius:14px;
+      transform: scale(1.02);
+      transition: transform .28s ease, filter .28s ease;
+      filter: saturate(1.05) contrast(1.03);
+    }
+    .product:hover .thumb img{ transform: scale(1.08); filter: saturate(1.14) contrast(1.08); }
+
+    .product h3{margin:0; font-size: 14px; letter-spacing:.2px; transform: translateZ(14px)}
+    .product p{margin:0; color:var(--muted); font-size: 12px; line-height:1.5; transform: translateZ(10px)}
+    .price-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:auto; transform: translateZ(16px)}
+    .price{font-weight:900; color: rgba(255,255,255,.92); font-size: 13px}
+    .mini{padding:9px 10px; border-radius: 12px; font-size: 12px}
+
+    /* ===== Gallery ===== */
+    .gallery-grid{display:grid; grid-template-columns: repeat(12, 1fr); gap: 12px;}
+    .shot{
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      overflow:hidden;
+      position:relative;
+      min-height: 180px;
+      cursor:pointer;
+      transform-style: preserve-3d;
+      transition: transform .24s ease, border-color .24s ease, filter .24s ease;
+    }
+    .shot::after{
+      content:"";
+      position:absolute; inset:0;
+      background: radial-gradient(closest-side at 30% 30%, rgba(45,224,154,.10), transparent 60%),
+                  radial-gradient(closest-side at 70% 80%, rgba(255,214,122,.10), transparent 65%);
+      opacity:.9;
+      pointer-events:none;
+      mix-blend-mode: overlay;
+    }
+    .shot img{width:100%; height:100%; object-fit:cover; display:block; border-radius:20px; filter:saturate(1.05) contrast(1.02);}
+    .shot:hover{transform: translateY(-2px) scale(1.01); border-color: rgba(255,255,255,.24); filter: drop-shadow(0 18px 34px rgba(0,0,0,.35));}
+    .shot .cap{
+      position:absolute; left:12px; bottom:12px;
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.28);
+      color: rgba(255,255,255,.86);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing:.2px;
+      z-index:2;
+    }
+
+    /* ===== Team ===== */
+    .team-grid{display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px;}
+    .person{
+      padding: 16px;
+      border-radius: 20px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      position:relative;
+      overflow:hidden;
+      transition: transform .2s ease, border-color .2s ease;
+    }
+    .person::before{
+      content:"";
+      position:absolute; inset:-50%;
+      background: radial-gradient(closest-side, rgba(255,214,122,.10), transparent 62%);
+      filter: blur(22px);
+      opacity:.55;
+    }
+    .person > *{position:relative}
+    .person:hover{transform: translateY(-1px); border-color: rgba(255,255,255,.22);}
+    .avatar{
+      width:56px;height:56px;border-radius: 18px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .person strong{display:block; font-size: 14px}
+    .person span{display:block; color:var(--muted); font-size: 12px; margin-top:2px}
+
+    /* ===== Order ===== */
+    .order-grid{display:grid; grid-template-columns: 1.05fr .95fr; gap: 14px; align-items:stretch;}
+    .order-box{padding:20px; border-radius: var(--radius2)}
+    .order-actions{display:flex; flex-wrap:wrap; gap:10px; margin-top: 14px}
+    .order-box p{color:var(--muted); line-height:1.7; margin: 8px 0 0}
+    .order-mini{display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;}
+    .mini-card{
+      padding: 14px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+    }
+    .mini-card strong{display:block; font-size: 13px}
+    .mini-card span{display:block; color:var(--muted); font-size:12px; margin-top:4px}
+
+    /* ===== Footer ===== */
+    footer{padding: 30px 0 46px; color: rgba(255,255,255,.62); font-size: 12px;}
+    .footer-inner{
+      display:flex; gap: 12px; justify-content:space-between; align-items:center; flex-wrap:wrap;
+      padding: 16px 18px;
+      border-radius: 18px;
+    }
+    .linkrow{display:flex; gap:10px; flex-wrap:wrap}
+    .linkrow a{color: rgba(255,255,255,.72); text-decoration:none}
+    .linkrow a:hover{color: rgba(255,255,255,.92)}
+
+    /* ===== Reveal animation ===== */
+    .reveal{opacity:0; transform: translateY(18px) scale(.99); transition: opacity .85s ease, transform .85s cubic-bezier(.2,.8,.2,1); will-change: transform, opacity;}
+    .reveal.in{opacity:1; transform: translateY(0) scale(1);}
+
+    /* ===== Modal Cart ===== */
+    .modal{position:fixed; inset:0; background: rgba(0,0,0,.58); display:none; align-items:center; justify-content:center; z-index: 80; padding: 16px;}
+    .modal.open{display:flex}
+    .modal-panel{width:min(900px, 100%); border-radius: 24px; overflow:hidden;}
+    .modal-head{display:flex; align-items:center; justify-content:space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.12);}
+    .modal-body{display:grid; grid-template-columns: 1.2fr .8fr; gap: 14px; padding: 14px;}
+    .list{display:flex; flex-direction:column; gap:10px; max-height: 54vh; overflow:auto; padding-right:6px;}
+    .item{display:flex; gap: 10px; align-items:center; justify-content:space-between; padding: 12px; border-radius: 18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05);}
+    .item-left{display:flex; gap:10px; align-items:center;}
+    .item-thumb{width:42px; height:42px; border-radius: 14px; border:1px solid rgba(255,255,255,.14); background-image: var(--lantern-svg); background-size: 52px 52px; background-position: 50% 60%; background-repeat:no-repeat; opacity:.9;}
+    .item strong{display:block; font-size: 13px}
+    .item span{display:block; color:var(--muted); font-size: 12px}
+    .qty{display:flex; align-items:center; gap:8px;}
+    .qty button{width:34px; height:34px; border-radius: 12px; border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: rgba(255,255,255,.9); font-weight:900; cursor:pointer;}
+    .summary{padding: 12px; border-radius: 18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); height: fit-content;}
+    .summary-row{display:flex; justify-content:space-between; align-items:center; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,.14); color: rgba(255,255,255,.86); font-size: 13px;}
+    .summary-row:last-child{border-bottom:none}
+    .summary .muted{color:var(--muted); font-size:12px; line-height:1.55; margin-top:10px}
+
+    /* ===== Lightbox ===== */
+    .lightbox{position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index: 90; padding:18px; background: rgba(0,0,0,.72);}
+    .lightbox.open{display:flex}
+    .lightbox-inner{
+      width:min(980px, 100%);
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(14px);
+      overflow:hidden;
+      position:relative;
+      box-shadow: 0 30px 90px rgba(0,0,0,.55);
+    }
+    .lightbox-inner img{width:100%; height:auto; display:block; max-height: 80vh; object-fit:contain; background: rgba(0,0,0,.18);}
+    .lightbox-bar{display:flex; justify-content:space-between; align-items:center; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.12);}
+    .lightbox-bar small{color: var(--muted)}
+    .iconbtn{border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: rgba(255,255,255,.9); border-radius: 12px; padding: 10px 12px; cursor:pointer; font-weight:900;}
+
+    /* ===== Responsive ===== */
+    @media (max-width: 980px){
+      .hero-grid, .about-grid, .order-grid{grid-template-columns: 1fr}
+      .product-grid{grid-template-columns: repeat(3, 1fr)}
+      .team-grid{grid-template-columns: repeat(2, 1fr)}
+      .modal-body{grid-template-columns: 1fr}
+      .hero-right{min-height: 380px}
+    }
+    @media (max-width: 560px){
+      .product-grid{grid-template-columns: repeat(2, 1fr)}
+      .team-grid{grid-template-columns: 1fr}
+      .nav-links{display:none}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="parallax" id="parallax"></div>
+  <div class="ramadhan-sky"></div>
+  <div class="pattern"></div>
+  <div class="grain"></div>
+  <div class="mosque"></div>
+
+  <!-- Navbar -->
+  <div class="container nav">
+    <div class="nav-inner glass reveal">
+      <a class="brand" href="#top">
+        <img src="/assets/brand/logo.png" alt="Keripik iLiL" />
+        <div style="display:flex;flex-direction:column;line-height:1.05">
+          <strong>Keripik iLiL</strong>
+          <span style="color:var(--muted);font-size:12px">Ramadhan Edition • Berani Coba, Berani Ketagihan</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" aria-label="Navigasi">
+        <a href="#tentang">Tentang</a>
+        <a href="#produk">Produk</a>
+        <a href="#galeri">Galeri</a>
+        <a href="#tim">Tim</a>
+        <a href="#pesan">Pesan</a>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="cart-pill" id="cartBtn" role="button" aria-label="Buka keranjang">
+          <span style="opacity:.9">🛒</span>
+          <span style="font-weight:900">Cart</span>
+          <span class="cart-count" id="cartCount">0</span>
+        </div>
+        <a class="btn primary" href="#pesan">Order</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <header class="section hero" id="top">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-copy glass reveal" id="heroTilt">
+          <div class="badge"><span class="dot"></span> Ramadhan Berkah • Limited Theme (sesuaikan)</div>
+
+          <h1>
+            <span style="color:var(--gold)">Berani Coba</span><br/>
+            <span style="color:var(--emerald2)">Berani Ketagihan</span>
+          </h1>
+
+          <p>
+            Edisi Ramadhan dengan nuansa malam yang hangat: lampu lentera, bintang, dan siluet masjid.
+            Tetap fokus pada yang penting—produk kamu tampil premium dan gampang di-order.
+          </p>
+
+          <div class="hero-cta">
+            <a class="btn whatsapp" id="ctaWa" href="#" title="Pesan via WhatsApp">💬 Pesan WhatsApp</a>
+            <a class="btn market" id="ctaMk" href="#" title="Checkout Marketplace">🛍️ Marketplace</a>
+            <button class="btn primary" id="ctaWeb" type="button" title="Checkout via Web">🧾 Checkout Web</button>
+            <a class="btn ghost" href="#produk" title="Lihat varian rasa">🍌 Pilih Rasa</a>
+          </div>
+
+          <div class="hero-note">
+            <span class="badge">🌙 Ramadhan: lantern + stars parallax</span>
+            <span class="badge">✨ Scroll: kamera hero bergerak halus</span>
+          </div>
+        </div>
+
+        <div class="hero-right glass reveal" id="threeTilt" aria-label="Animasi produk utama (Ramadhan)">
+          <div id="threeWrap">
+            <canvas id="three"></canvas>
+          </div>
+          <div class="three-overlay glass">
+            <small>
+              <b>Produk Utama</b><br/>
+              Foto pack + crescent glow + partikel bintang.
+            </small>
+            <span class="kbd">SCROLL</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TENTANG -->
+  <section class="section compact" id="tentang">
+    <div class="container">
+      <div class="section-title reveal">
+        <div>
+          <h2>Tentang Keripik iLiL</h2>
+          <p>Isi narasi brand kamu di sini. Versi Ramadhan bisa menambahkan paket hampers / takjil / oleh-oleh.</p>
+        </div>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-copy glass reveal">
+          <p style="margin:0;color:var(--muted);line-height:1.75">
+            Keripik iLiL dibuat tipis, renyah, dan cocok untuk momen kumpul keluarga.
+            Ramadhan Edition bisa kamu pakai untuk promo bundling, hampers, atau limited packaging.
+          </p>
+        </div>
+
+        <div class="about-stats">
+          <div class="stat reveal">
+            <strong>6+</strong>
+            <span>Varian rasa</span>
+          </div>
+          <div class="stat reveal">
+            <strong>Hampers</strong>
+            <span>Bundle Ramadhan (opsional)</span>
+          </div>
+          <div class="stat reveal">
+            <strong>Fast Order</strong>
+            <span>WA • Market • Web</span>
+          </div>
+          <div class="stat reveal">
+            <strong>Night Premium</strong>
+            <span>Glass + Lantern</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUK -->
+  <section class="section" id="produk">
+    <div class="container">
+      <div class="section-title reveal">
+        <div>
+          <h2>Varian Rasa</h2>
+          <p>Semua card pakai foto asli. Glow Ramadhan: hijau + emas.</p>
+        </div>
+        <span class="badge">🕌 Promo Ramadhan bisa ditaruh di sini</span>
+      </div>
+
+      <div class="product-grid" id="productGrid"></div>
+    </div>
+  </section>
+
+  <!-- GALERI -->
+  <section class="section compact" id="galeri">
+    <div class="container">
+      <div class="section-title reveal">
+        <div>
+          <h2>Galeri</h2>
+          <p>Klik foto untuk lightbox.</p>
+        </div>
+      </div>
+
+      <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+  </section>
+
+  <!-- TIM -->
+  <section class="section compact" id="tim">
+    <div class="container">
+      <div class="section-title reveal">
+        <div>
+          <h2>Tim Kami</h2>
+          <p>Avatar sementara menggunakan logo. Nanti ganti foto tim asli.</p>
+        </div>
+      </div>
+
+      <div class="team-grid">
+        <div class="person reveal">
+          <div class="avatar"><img src="/assets/brand/logo.png" alt="Icha"></div>
+          <div><strong>Icha</strong><span>Founder</span></div>
+        </div>
+        <div class="person reveal">
+          <div class="avatar"><img src="/assets/brand/logo.png" alt="Beno"></div>
+          <div><strong>Beno</strong><span>Tim IT</span></div>
+        </div>
+        <div class="person reveal">
+          <div class="avatar"><img src="/assets/brand/logo.png" alt="Mah Jijil"></div>
+          <div><strong>Mah Jijil</strong><span>Produksi</span></div>
+        </div>
+        <div class="person reveal">
+          <div class="avatar"><img src="/assets/brand/logo.png" alt="Kika"></div>
+          <div><strong>Kika</strong><span>Umum</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PESAN -->
+  <section class="section" id="pesan">
+    <div class="container">
+      <div class="section-title reveal">
+        <div>
+          <h2>Pesan Sekarang</h2>
+          <p>WA / Marketplace / Checkout Web (cart).</p>
+        </div>
+      </div>
+
+      <div class="order-grid">
+        <div class="order-box glass reveal">
+          <div class="badge"><span class="dot"></span> Ramadhan: cocok untuk hampers & oleh-oleh</div>
+          <h3 style="margin:10px 0 0">Pilih cara beli yang paling nyaman.</h3>
+          <p>
+            1) <b>WhatsApp</b> untuk tanya stok/ongkir cepat. <br/>
+            2) <b>Marketplace</b> untuk voucher & promo. <br/>
+            3) <b>Web Checkout</b> untuk experience brand yang rapih (cart).
+          </p>
+
+          <div class="order-actions">
+            <a class="btn whatsapp" id="orderWa" href="#">💬 Pesan via WhatsApp</a>
+            <a class="btn market" id="orderMk" href="#">🛍️ Checkout Marketplace</a>
+            <button class="btn primary" id="orderWeb" type="button">🧾 Checkout di Web</button>
+          </div>
+
+          <div class="order-mini">
+            <div class="mini-card">
+              <strong>Jam Operasional</strong>
+              <span>09:00–21:00</span>
+            </div>
+            <div class="mini-card">
+              <strong>Lokasi</strong>
+              <span>Bandung, Indonesia</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-box glass reveal">
+          <h3 style="margin:0 0 10px">Info Kontak</h3>
+          <div class="mini-card" style="margin-bottom:12px">
+            <strong>WhatsApp</strong>
+            <span id="waText">+62 8xx-xxxx-xxxx</span>
+          </div>
+          <div class="mini-card" style="margin-bottom:12px">
+            <strong>Marketplace</strong>
+            <span>Shopee / Tokopedia</span>
+          </div>
+          <div class="mini-card">
+            <strong>Email</strong>
+            <span>hello@keripikilil.example</span>
+          </div>
+
+          <p style="margin-top:12px;color:var(--muted)">
+            Tips: untuk Ramadhan, kamu bisa set pesan default: “Mau order untuk hampers / paket buka puasa”.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner glass reveal">
+        <div style="display:flex; align-items:center; gap:10px">
+          <img src="/assets/brand/logo.png" alt="Keripik iLiL" style="width:34px;height:34px;object-fit:contain;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);padding:6px" />
+          <div>
+            <div style="font-weight:900; color: rgba(255,255,255,.86)">Keripik iLiL — Ramadhan Edition</div>
+            <div style="color: rgba(255,255,255,.60)">© 2026</div>
+          </div>
+        </div>
+        <div class="linkrow">
+          <a href="#tentang">Tentang</a>
+          <a href="#produk">Produk</a>
+          <a href="#galeri">Galeri</a>
+          <a href="#tim">Tim</a>
+          <a href="#pesan">Pesan</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cart Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-panel glass">
+      <div class="modal-head">
+        <div style="display:flex; align-items:center; gap:10px">
+          <span style="font-size:18px">🛒</span>
+          <div>
+            <div style="font-weight:900">Keranjang</div>
+            <div style="color:var(--muted); font-size:12px">Tambah produk dari section “Varian Rasa”.</div>
+          </div>
+        </div>
+        <button class="btn ghost" id="closeModal" type="button">Tutup</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="list" id="cartList"></div>
+
+        <div class="summary">
+          <div class="summary-row">
+            <span>Total item</span>
+            <b id="sumItems">0</b>
+          </div>
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <b id="sumSubtotal">Rp 0</b>
+          </div>
+          <div class="summary-row">
+            <span>Ongkir</span>
+            <b style="color:var(--muted)">Nanti</b>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px">
+            <a class="btn whatsapp" id="checkoutWa" href="#">💬 Checkout WA</a>
+            <a class="btn market" id="checkoutMk" href="#">🛍️ Marketplace</a>
+            <button class="btn primary" id="checkoutWeb" type="button">🧾 Pay</button>
+          </div>
+
+          <div class="muted">
+            Template Ramadhan. Nanti bisa disambungkan ke backend + payment.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gallery Lightbox -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lightbox-inner">
+      <img id="lightImg" alt="Preview Galeri">
+      <div class="lightbox-bar">
+        <small id="lightCap">Galeri</small>
+        <div style="display:flex; gap:8px">
+          <button class="iconbtn" id="prevImg" type="button">‹</button>
+          <button class="iconbtn" id="nextImg" type="button">›</button>
+          <button class="iconbtn" id="closeLight" type="button">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js -->
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+
+    const $ = (q, el=document) => el.querySelector(q);
+    const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+    /* =========================
+       CONFIG: asset & link
+    ========================== */
+    const ASSETS = {
+      logo: "/assets/brand/logo.png",
+      heroPack: "/assets/products/pack-hero.png",
+      variants: {
+        original: "/assets/variants/original.jpg",
+        coklat:  "/assets/variants/coklat.jpg",
+        keju:    "/assets/variants/keju.jpg",
+        balado:  "/assets/variants/balado.jpg",
+        pedas:   "/assets/variants/pedas.jpg"
+      },
+      gallery: [
+        {src: "/assets/gallery/g1.jpg", cap: "Galeri 01"},
+        {src: "/assets/gallery/g2.jpg", cap: "Galeri 02"},
+        {src: "/assets/gallery/g3.jpg", cap: "Galeri 03"},
+        {src: "/assets/gallery/g4.jpg", cap: "Galeri 04"},
+      ]
+    };
+
+    const WA_NUMBER = "628xxxxxxxxxx"; // TODO
+    const MARKET_URL = "#";           // TODO
+    const WEB_CHECKOUT_URL = "#";     // TODO (opsional)
+
+    /* =========================
+       Reveal
+    ========================== */
+    const io = new IntersectionObserver((entries)=>{
+      for (const e of entries){
+        if (e.isIntersecting) e.target.classList.add("in");
+      }
+    }, {threshold: 0.12});
+    $$(".reveal").forEach(el=>io.observe(el));
+
+    /* =========================
+       Ramadhan parallax ornaments (stars + lanterns)
+    ========================== */
+    const par = $("#parallax");
+    const seed = 2026;
+    const rand = (i)=>{
+      let x = (seed + i*99991) >>> 0;
+      x = (x * 1664525 + 1013904223) >>> 0;
+      return x / 2**32;
+    };
+
+    // create stars
+    const STAR_COUNT = 48;
+    for (let i=0;i<STAR_COUNT;i++){
+      const s = document.createElement("div");
+      s.className = "star";
+      const r1 = rand(i*3+1), r2 = rand(i*3+2), r3 = rand(i*3+3);
+      s.style.left = Math.round(r1*100) + "vw";
+      s.style.top  = Math.round(r2*70) + "vh";
+      s.style.opacity = String(0.08 + r3*0.28);
+      s.dataset.depth = String(0.06 + r3*0.22);
+      s.dataset.tw = String(0.6 + r1*1.8);
+      par.appendChild(s);
+    }
+
+    // create lanterns
+    const LANTERN_COUNT = 6;
+    for (let i=0;i<LANTERN_COUNT;i++){
+      const l = document.createElement("div");
+      l.className = "lantern";
+      const r1 = rand(500+i*3+1), r2 = rand(500+i*3+2), r3 = rand(500+i*3+3);
+      l.style.left = Math.round(r1*100) + "vw";
+      l.style.top  = Math.round(r2*95) - 10 + "vh";
+      const scale = 0.55 + r3*0.55;
+      l.style.transform = `translate3d(0,0,0) scale(${scale})`;
+      l.dataset.baseScale = String(scale);
+      l.dataset.depth = String(0.12 + r2*0.22);
+      par.appendChild(l);
+    }
+
+    // scroll smoothing
+    let scrollY = 0, targetScroll = 0;
+    window.addEventListener("scroll", ()=>{ targetScroll = window.scrollY || 0; }, {passive:true});
+
+    function animateParallax(){
+      scrollY += (targetScroll - scrollY) * 0.08;
+      const t = scrollY;
+
+      // stars drift
+      $$(".star", par).forEach((s, i)=>{
+        const depth = parseFloat(s.dataset.depth || "0.12");
+        const tw = parseFloat(s.dataset.tw || "1.2");
+        const x = Math.sin((t*0.0012) + i*tw) * (18 * depth);
+        const y = (t * depth * 0.18);
+        const pulse = 0.65 + Math.sin((performance.now()*0.0012) + i)*0.35;
+        s.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+        s.style.opacity = String(clamp((0.06 + pulse*0.18) * (0.5 + depth), 0.05, 0.32));
+      });
+
+      // lantern float
+      $$(".lantern", par).forEach((l, i)=>{
+        const depth = parseFloat(l.dataset.depth || "0.18");
+        const baseScale = parseFloat(l.dataset.baseScale || "1");
+        const sway = Math.sin((t*0.0010) + i) * (22 * depth);
+        const y = (t * depth * 0.16);
+        const bob = Math.sin((performance.now()*0.0010) + i*0.7) * 6;
+        l.style.transform = `translate3d(${sway}px, ${y + bob}px, 0) scale(${baseScale})`;
+      });
+
+      requestAnimationFrame(animateParallax);
+    }
+    animateParallax();
+
+    /* =========================
+       Product render
+    ========================== */
+    const products = [
+      {key:"original", name:"Original", desc:"Rasa natural & gurih. Tipis, renyah.", price:15000, img: ASSETS.variants.original, glow:"rgba(255,214,122,.22)"},
+      {key:"keju",     name:"Keju",     desc:"Aroma keju creamy, balance manis.",  price:15000, img: ASSETS.variants.keju,     glow:"rgba(255,255,255,.16)"},
+      {key:"balado",   name:"Balado",   desc:"Pedas-manis gurih, bikin nagih.",   price:15000, img: ASSETS.variants.balado,   glow:"rgba(255,178,74,.18)"},
+      {key:"coklat",   name:"Coklat",   desc:"Manis coklat tebal, cocok dessert.",price:17000, img: ASSETS.variants.coklat,   glow:"rgba(120,75,45,.20)"},
+      {key:"pedas",    name:"Pedas",    desc:"Lebih nendang untuk pecinta pedas.", price:15000, img: ASSETS.variants.pedas,    glow:"rgba(255,214,122,.16)"},
+      {key:"pedas2",   name:"Pedas Level 2", desc:"Kalau mau extra nendang (dummy).", price:15000, img: ASSETS.variants.pedas, glow:"rgba(255,214,122,.20)"},
+    ];
+
+    const rupiah = (n)=> "Rp " + (n||0).toLocaleString("id-ID");
+    const grid = $("#productGrid");
+    grid.innerHTML = products.map(p=>`
+      <div class="product reveal tilt" style="--glow:${p.glow}" data-name="${p.name}" data-price="${p.price}">
+        <div class="thumb"><img src="${p.img}" alt="${p.name}"></div>
+        <h3>${p.name}</h3>
+        <p>${p.desc}</p>
+        <div class="price-row">
+          <span class="price">${rupiah(p.price)}</span>
+          <button class="btn mini primary add" type="button" data-name="${p.name}" data-price="${p.price}">Tambah</button>
+        </div>
+      </div>
+    `).join("");
+    $$(".reveal", grid).forEach(el=>io.observe(el));
+
+    /* =========================
+       Tilt
+    ========================== */
+    function addTilt(el, strength=10){
+      let rAF = null;
+      const onMove = (e)=>{
+        const rect = el.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width;
+        const py = (e.clientY - rect.top) / rect.height;
+        const rx = (0.5 - py) * strength;
+        const ry = (px - 0.5) * strength;
+        if (rAF) cancelAnimationFrame(rAF);
+        rAF = requestAnimationFrame(()=>{
+          el.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-1px)`;
+        });
+      };
+      const onLeave = ()=>{
+        if (rAF) cancelAnimationFrame(rAF);
+        el.style.transform = `perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+      };
+      el.addEventListener("mousemove", onMove);
+      el.addEventListener("mouseleave", onLeave);
+    }
+    addTilt($("#heroTilt"), 6);
+    addTilt($("#threeTilt"), 5);
+    $$(".product.tilt").forEach(el=> addTilt(el, 10));
+
+    /* =========================
+       Cart
+    ========================== */
+    const cart = new Map();
+    const cartCount = $("#cartCount");
+    const modal = $("#modal");
+    const cartList = $("#cartList");
+    const sumItems = $("#sumItems");
+    const sumSubtotal = $("#sumSubtotal");
+
+    function renderCart(){
+      cartList.innerHTML = "";
+      let items = 0, subtotal = 0;
+
+      for (const [name, it] of cart.entries()){
+        items += it.qty;
+        subtotal += it.qty * it.price;
+
+        const row = document.createElement("div");
+        row.className = "item";
+        row.innerHTML = `
+          <div class="item-left">
+            <div class="item-thumb" aria-hidden="true"></div>
+            <div>
+              <strong>${name}</strong>
+              <span>${rupiah(it.price)} • qty ${it.qty}</span>
+            </div>
+          </div>
+          <div class="qty">
+            <button type="button" data-act="dec" aria-label="Kurangi">−</button>
+            <b style="min-width:18px;text-align:center">${it.qty}</b>
+            <button type="button" data-act="inc" aria-label="Tambah">+</button>
+            <button type="button" data-act="rm" aria-label="Hapus" style="margin-left:6px">✕</button>
+          </div>
+        `;
+        row.querySelector('[data-act="dec"]').onclick = ()=>updateQty(name, -1);
+        row.querySelector('[data-act="inc"]').onclick = ()=>updateQty(name, +1);
+        row.querySelector('[data-act="rm"]').onclick = ()=>removeItem(name);
+        cartList.appendChild(row);
+      }
+
+      cartCount.textContent = String(items);
+      sumItems.textContent = String(items);
+      sumSubtotal.textContent = rupiah(subtotal);
+
+      if (cart.size === 0){
+        const empty = document.createElement("div");
+        empty.className = "item";
+        empty.style.justifyContent = "center";
+        empty.style.color = "rgba(255,255,255,.7)";
+        empty.innerHTML = "Keranjang masih kosong. Tambah produk dulu ya 🙂";
+        cartList.appendChild(empty);
+      }
+      bindLinks();
+    }
+
+    function addItem(name, price){
+      const cur = cart.get(name) || {price, qty:0};
+      cur.price = price;
+      cur.qty += 1;
+      cart.set(name, cur);
+      renderCart();
+    }
+    function updateQty(name, delta){
+      const it = cart.get(name);
+      if (!it) return;
+      it.qty = Math.max(1, it.qty + delta);
+      cart.set(name, it);
+      renderCart();
+    }
+    function removeItem(name){
+      cart.delete(name);
+      renderCart();
+    }
+
+    function openCart(){ modal.classList.add("open"); renderCart(); }
+    function closeCart(){ modal.classList.remove("open"); }
+
+    $("#cartBtn").onclick = openCart;
+    $("#closeModal").onclick = closeCart;
+    modal.addEventListener("click", (e)=>{ if (e.target === modal) closeCart(); });
+
+    document.addEventListener("click", (e)=>{
+      const btn = e.target.closest(".add");
+      if (!btn) return;
+      addItem(btn.dataset.name, parseInt(btn.dataset.price, 10));
+    });
+
+    /* =========================
+       Checkout links (Ramadhan message)
+    ========================== */
+    function buildWAMessage(){
+      let msg = "Assalamu’alaikum, saya mau pesan Keripik iLiL (Ramadhan Edition):%0A";
+      let i = 1;
+      for (const [name, it] of cart.entries()){
+        msg += `${i}. ${name} x${it.qty}%0A`;
+        i++;
+      }
+      msg += "%0A(Paket hampers/bundling jika ada, mohon info ya)%0A%0ATerima kasih 🙏";
+      return msg;
+    }
+
+    function bindLinks(){
+      const waLink = `https://wa.me/${WA_NUMBER}?text=${buildWAMessage()}`;
+      $("#ctaWa").href = waLink;
+      $("#orderWa").href = waLink;
+      $("#checkoutWa").href = waLink;
+
+      $("#ctaMk").href = MARKET_URL;
+      $("#orderMk").href = MARKET_URL;
+      $("#checkoutMk").href = MARKET_URL;
+
+      const goWeb = ()=>{
+        if (cart.size === 0) openCart();
+        else {
+          alert("Dummy checkout web (Ramadhan). Nanti arahkan ke route /checkout + kirim cart.");
+          // location.href = WEB_CHECKOUT_URL;
+        }
+      };
+      $("#ctaWeb").onclick = goWeb;
+      $("#orderWeb").onclick = goWeb;
+      $("#checkoutWeb").onclick = goWeb;
+
+      $("#waText").textContent = "+" + WA_NUMBER;
+    }
+    bindLinks();
+
+    /* =========================
+       Gallery + lightbox
+    ========================== */
+    const galleryGrid = $("#galleryGrid");
+    const layout = [
+      {span:4, i:0}, {span:4, i:1}, {span:4, i:2},
+      {span:12, i:3},
+    ];
+    galleryGrid.innerHTML = layout.map(x=>{
+      const g = ASSETS.gallery[x.i];
+      return `
+        <div class="shot reveal" style="grid-column: span ${x.span}" data-i="${x.i}">
+          <img src="${g.src}" alt="${g.cap}">
+          <div class="cap">📸 ${g.cap}</div>
+        </div>
+      `;
+    }).join("");
+    $$(".reveal", galleryGrid).forEach(el=>io.observe(el));
+
+    const lightbox = $("#lightbox");
+    const lightImg = $("#lightImg");
+    const lightCap = $("#lightCap");
+    let lightIndex = 0;
+
+    function openLight(i){
+      lightIndex = i;
+      const g = ASSETS.gallery[lightIndex];
+      lightImg.src = g.src;
+      lightCap.textContent = g.cap;
+      lightbox.classList.add("open");
+      lightbox.setAttribute("aria-hidden", "false");
+    }
+    function closeLight(){
+      lightbox.classList.remove("open");
+      lightbox.setAttribute("aria-hidden", "true");
+    }
+    function nextLight(dir){
+      const n = ASSETS.gallery.length;
+      lightIndex = (lightIndex + dir + n) % n;
+      const g = ASSETS.gallery[lightIndex];
+      lightImg.src = g.src;
+      lightCap.textContent = g.cap;
+    }
+
+    galleryGrid.addEventListener("click", (e)=>{
+      const shot = e.target.closest(".shot");
+      if (!shot) return;
+      openLight(parseInt(shot.dataset.i, 10));
+    });
+    $("#closeLight").onclick = closeLight;
+    $("#prevImg").onclick = ()=>nextLight(-1);
+    $("#nextImg").onclick = ()=>nextLight(+1);
+    lightbox.addEventListener("click", (e)=>{ if (e.target === lightbox) closeLight(); });
+
+    /* =========================
+       Scroll-spy
+    ========================== */
+    const navLinks = $$(".nav-links a");
+    const sections = navLinks.map(a => $(a.getAttribute("href"))).filter(Boolean);
+    const spy = new IntersectionObserver((entries)=>{
+      entries.forEach(en=>{
+        if (!en.isIntersecting) return;
+        const id = "#" + en.target.id;
+        navLinks.forEach(a=>a.classList.toggle("active", a.getAttribute("href") === id));
+      });
+    }, {threshold: 0.45});
+    sections.forEach(s=>spy.observe(s));
+
+    /* =========================
+       Three.js Ramadhan Hero
+       - Real pack plane
+       - Crescent moon + lantern particles orbit
+       - Star sparkles
+       - Scroll affects camera
+    ========================== */
+    const canvas = $("#three");
+    const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    camera.position.set(0, 0.70, 4.6);
+
+    // Lights
+    const key = new THREE.DirectionalLight(0xffffff, 1.05);
+    key.position.set(2.2, 3.2, 2.2);
+    scene.add(key);
+
+    const fill = new THREE.DirectionalLight(0xffffff, 0.55);
+    fill.position.set(-3.2, 1.4, 2.0);
+    scene.add(fill);
+
+    const goldRim = new THREE.PointLight(0xffd67a, 1.15, 16);
+    goldRim.position.set(1.1, 1.2, -2.8);
+    scene.add(goldRim);
+
+    const greenRim = new THREE.PointLight(0x2de09a, 0.95, 16);
+    greenRim.position.set(-1.2, 0.9, -2.4);
+    scene.add(greenRim);
+
+    scene.fog = new THREE.FogExp2(0x050812, 0.05);
+
+    const group = new THREE.Group();
+    scene.add(group);
+
+    // Stage plate
+    const plate = new THREE.Mesh(
+      new THREE.CircleGeometry(1.75, 80),
+      new THREE.MeshStandardMaterial({color: 0x050812, roughness:0.95, metalness:0.02, transparent:true, opacity:0.55})
+    );
+    plate.rotation.x = -Math.PI/2;
+    plate.position.y = -1.18;
+    group.add(plate);
+
+    // Real Pack Plane
+    const loader = new THREE.TextureLoader();
+    const packTex = loader.load(ASSETS.heroPack);
+    packTex.colorSpace = THREE.SRGBColorSpace;
+    packTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+    const pack = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.00, 2.82),
+      new THREE.MeshStandardMaterial({ map: packTex, transparent:true, roughness:0.70, metalness:0.02 })
+    );
+    pack.position.set(0, 0.05, 0.65);
+    group.add(pack);
+
+    // Shadow behind pack
+    const shadow = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.25, 3.15),
+      new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0.16})
+    );
+    shadow.position.set(0.05, 0.02, 0.50);
+    group.add(shadow);
+
+    // Crescent moon (ring segment)
+    const crescent = new THREE.Group();
+    group.add(crescent);
+
+    const moonOuter = new THREE.Mesh(
+      new THREE.TorusGeometry(0.85, 0.10, 24, 120, Math.PI*1.6),
+      new THREE.MeshStandardMaterial({color: 0xffd67a, roughness:0.35, metalness:0.25, emissive: new THREE.Color(0x3a2a10), emissiveIntensity:0.35})
+    );
+    moonOuter.rotation.set(0.25, 0.15, 0.5);
+    moonOuter.position.set(-1.05, 0.70, 0.25);
+    crescent.add(moonOuter);
+
+    const moonInner = new THREE.Mesh(
+      new THREE.TorusGeometry(0.72, 0.10, 24, 120, Math.PI*1.6),
+      new THREE.MeshStandardMaterial({color: 0x0b1530, roughness:0.9, metalness:0.0})
+    );
+    moonInner.rotation.copy(moonOuter.rotation);
+    moonInner.position.copy(moonOuter.position);
+    moonInner.position.x += 0.16;
+    moonInner.position.y -= 0.06;
+    crescent.add(moonInner);
+
+    // Stars (small sprites)
+    const starCount = 120;
+    const starGeo = new THREE.BufferGeometry();
+    const pos = new Float32Array(starCount * 3);
+    for (let i=0;i<starCount;i++){
+      const r = 6 + Math.random()*9;
+      const a = Math.random() * Math.PI * 2;
+      const b = (Math.random() - 0.5) * 0.9;
+      pos[i*3+0] = Math.cos(a)*r;
+      pos[i*3+1] = b * 4.0;
+      pos[i*3+2] = Math.sin(a)*r;
+    }
+    starGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    const starMat = new THREE.PointsMaterial({color:0xffffff, size:0.03, transparent:true, opacity:0.55});
+    const stars = new THREE.Points(starGeo, starMat);
+    group.add(stars);
+
+    // Lantern particles (tiny glowing planes)
+    const lanternCount = 30;
+    const lanternGeo = new THREE.PlaneGeometry(0.18, 0.24);
+    const lanterns = [];
+    for (let i=0;i<lanternCount;i++){
+      const mat = new THREE.MeshStandardMaterial({
+        color: 0xffd67a,
+        roughness: 0.55,
+        metalness: 0.08,
+        transparent: true,
+        opacity: 0.10 + Math.random()*0.22,
+        emissive: new THREE.Color(0x3a2a10),
+        emissiveIntensity: 0.20,
+        side: THREE.DoubleSide
+      });
+      const m = new THREE.Mesh(lanternGeo, mat);
+      const a = i / lanternCount * Math.PI*2;
+      const r = 1.95 + (i%7)*0.07;
+      m.position.set(Math.cos(a)*r, (i%9)*0.14 - 0.62, Math.sin(a)*r);
+      m.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+      group.add(m);
+      lanterns.push(m);
+    }
+
+    // Resize
+    function resize(){
+      const wrap = $("#threeWrap");
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    // Animate
+    let t0 = performance.now();
+    function animate(now){
+      const dt = (now - t0) / 1000;
+      t0 = now;
+
+      const s = clamp((window.scrollY || 0) / (document.body.scrollHeight - innerHeight + 1), 0, 1);
+
+      // pack motion
+      pack.rotation.y = Math.sin(now*0.00055) * 0.16 + s*0.10;
+      pack.rotation.x = Math.sin(now*0.00045) * 0.05 - s*0.06;
+      pack.position.y = 0.05 + Math.sin(now*0.0010) * 0.028;
+
+      // crescent drift
+      crescent.rotation.y = Math.sin(now*0.00035) * 0.18 + s*0.05;
+      crescent.position.y = Math.sin(now*0.0008) * 0.03;
+
+      // group orbit
+      group.rotation.y += dt * (0.22 + s*0.45);
+      group.rotation.x = Math.sin(now*0.00055) * 0.05 + s*0.04;
+
+      // lantern orbit
+      for (let i=0;i<lanterns.length;i++){
+        const m = lanterns[i];
+        m.rotation.x += dt * (0.35 + i*0.006);
+        m.rotation.y += dt * (0.28 + i*0.007);
+        m.position.y += Math.sin(now*0.001 + i) * 0.0009;
+      }
+
+      // star twinkle
+      starMat.opacity = 0.35 + Math.sin(now*0.0011)*0.10;
+
+      // camera parallax
+      camera.position.x = Math.sin(now*0.00035) * 0.13;
+      camera.position.y = 0.72 + Math.cos(now*0.0005) * 0.06 - s*0.18;
+      camera.lookAt(0, 0.05, 0);
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    // ESC close
+    window.addEventListener("keydown", (e)=>{
+      if (e.key === "Escape"){
+        modal.classList.remove("open");
+        lightbox.classList.remove("open");
+      }
+    });
+
+    /* =========================
+       Lightbox controls
+    ========================== */
+    const lightbox = $("#lightbox");
+    const lightImg = $("#lightImg");
+    const lightCap = $("#lightCap");
+    let lightIndex = 0;
+
+    function openLight(i){
+      lightIndex = i;
+      const g = ASSETS.gallery[lightIndex];
+      lightImg.src = g.src;
+      lightCap.textContent = g.cap;
+      lightbox.classList.add("open");
+      lightbox.setAttribute("aria-hidden", "false");
+    }
+    function closeLight(){
+      lightbox.classList.remove("open");
+      lightbox.setAttribute("aria-hidden", "true");
+    }
+    function nextLight(dir){
+      const n = ASSETS.gallery.length;
+      lightIndex = (lightIndex + dir + n) % n;
+      const g = ASSETS.gallery[lightIndex];
+      lightImg.src = g.src;
+      lightCap.textContent = g.cap;
+    }
+
+    galleryGrid.addEventListener("click", (e)=>{
+      const shot = e.target.closest(".shot");
+      if (!shot) return;
+      openLight(parseInt(shot.dataset.i, 10));
+    });
+    $("#closeLight").onclick = closeLight;
+    $("#prevImg").onclick = ()=>nextLight(-1);
+    $("#nextImg").onclick = ()=>nextLight(+1);
+    lightbox.addEventListener("click", (e)=>{ if (e.target === lightbox) closeLight(); });
+
+    /* =========================
+       Modal open/close
+    ========================== */
+    function closeCart(){ modal.classList.remove("open"); }
+    modal.addEventListener("click", (e)=>{ if (e.target === modal) closeCart(); });
+
+  </script>
+</body>
+</html>

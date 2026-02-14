@@ -1,0 +1,1402 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Keripik iLiL — Cinematic Glass (Parallax + Three.js)</title>
+  <meta name="description" content="Cinematic landing one-page glassmorphism + parallax + Three.js (real assets ready)." />
+
+  <style>
+    :root{
+      /* === Brand: dominan hijau + aksen kuning === */
+      --bg0:#06130c;
+      --bg1:#072015;
+
+      --glass: rgba(255,255,255,.08);
+      --glass2: rgba(255,255,255,.12);
+      --stroke: rgba(255,255,255,.18);
+
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.68);
+
+      --accent: #ffd54a;   /* kuning */
+      --accent2:#39d98a;   /* hijau terang */
+      --danger:#ff3b5c;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 20px;
+      --radius2: 28px;
+      --max: 1160px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(57,217,138,.14), transparent 60%),
+        radial-gradient(900px 600px at 85% 30%, rgba(255,213,74,.10), transparent 55%),
+        radial-gradient(1000px 700px at 60% 90%, rgba(57,217,138,.08), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+
+    /* ===== Cinematic “film grain” + vignette (halus) ===== */
+    .cinema{
+      position:fixed; inset:0; z-index:-1; pointer-events:none;
+      background:
+        radial-gradient(1200px 600px at 50% 30%, rgba(255,255,255,.06), transparent 60%),
+        radial-gradient(800px 420px at 80% 70%, rgba(57,217,138,.08), transparent 65%),
+        radial-gradient(900px 480px at 10% 80%, rgba(255,213,74,.06), transparent 70%),
+        radial-gradient(closest-side at 50% 50%, transparent 65%, rgba(0,0,0,.42) 100%);
+      mix-blend-mode: overlay;
+      opacity:.85;
+      filter: blur(.2px);
+    }
+    .grain{
+      position:fixed; inset:-20%; z-index:-1; pointer-events:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+      transform: translate3d(0,0,0);
+      opacity:.10;
+      mix-blend-mode: soft-light;
+      animation: grainMove 10s steps(10) infinite;
+    }
+    @keyframes grainMove{
+      0%{transform:translate3d(-2%, -2%,0)}
+      20%{transform:translate3d(2%, -3%,0)}
+      40%{transform:translate3d(-1%, 2%,0)}
+      60%{transform:translate3d(3%, 1%,0)}
+      80%{transform:translate3d(-3%, 1%,0)}
+      100%{transform:translate3d(-2%, -2%,0)}
+    }
+
+    /* ===== Parallax Chip Background (scroll-driven) ===== */
+    .bg-parallax{
+      position:fixed;
+      inset:0;
+      z-index:-2;
+      pointer-events:none;
+      overflow:hidden;
+    }
+    .bg-parallax::before{
+      content:"";
+      position:absolute; inset:-20%;
+      background:
+        radial-gradient(closest-side, rgba(57,217,138,.18), transparent 70%) 0 0/420px 420px,
+        radial-gradient(closest-side, rgba(255,255,255,.06), transparent 70%) 140px 120px/520px 520px,
+        radial-gradient(closest-side, rgba(255,213,74,.12), transparent 70%) 220px 80px/620px 620px;
+      filter: blur(18px);
+      opacity:.75;
+      transform: translate3d(0,0,0) scale(1.05);
+    }
+
+    /* default chip fallback via inline SVG */
+    :root{
+      --chip-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cdefs%3E%3CradialGradient id='g' cx='35%25' cy='30%25' r='70%25'%3E%3Cstop offset='0%25' stop-color='%23ffe7a3'/%3E%3Cstop offset='55%25' stop-color='%23f7c85a'/%3E%3Cstop offset='100%25' stop-color='%23b87717'/%3E%3C/radialGradient%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .22 0'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M114 15c33 6 62 19 77 45s9 55-8 77-43 44-76 54-72 10-95-12-31-58-12-91 51-79 114-73z' fill='url(%23g)'/%3E%3Cpath d='M55 88c18-21 44-33 66-31s38 16 47 31-2 32-22 45-47 22-66 16-44-40-25-61z' fill='rgba(255,255,255,.10)'/%3E%3Cpath d='M74 48c12-10 30-15 43-10s20 20 12 30-26 13-40 8-25-18-15-28z' fill='rgba(0,0,0,.10)'/%3E%3Cg filter='url(%23n)'%3E%3Cpath d='M114 15c33 6 62 19 77 45s9 55-8 77-43 44-76 54-72 10-95-12-31-58-12-91 51-79 114-73z' fill='rgba(0,0,0,.10)'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .chip{
+      position:absolute;
+      width:220px; height:220px;
+      background-image: var(--chip-svg);
+      background-size: contain;
+      background-repeat:no-repeat;
+      opacity:.18;
+      filter: blur(.2px) drop-shadow(0 18px 38px rgba(0,0,0,.45));
+      transform: translate3d(0,0,0) rotate(0deg) scale(1);
+      will-change: transform;
+      mix-blend-mode: screen;
+    }
+
+    /* ===== Layout ===== */
+    .container{width:min(var(--max), calc(100% - 40px)); margin:0 auto;}
+    .section{position:relative; padding:92px 0;}
+    .section.compact{padding:72px 0;}
+    .section-title{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:18px;
+      margin-bottom:22px;
+    }
+    .section-title h2{margin:0; letter-spacing:.4px; font-size: clamp(22px, 2.6vw, 34px);}
+    .section-title p{margin:0; color:var(--muted); max-width:60ch}
+
+    /* ===== Glass UI ===== */
+    .glass{
+      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: var(--radius2);
+    }
+    .card{padding: 18px; border-radius: var(--radius);}
+
+    /* ===== Buttons ===== */
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      text-decoration:none;
+      cursor:pointer;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease, opacity .18s ease, filter .18s ease;
+      user-select:none;
+      font-weight:700;
+      letter-spacing:.15px;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.26); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(255,213,74,.94), rgba(255,170,34,.90));
+      color:#14120b;
+      border-color: rgba(255,255,255,.25);
+      filter: drop-shadow(0 14px 26px rgba(255,213,74,.10));
+    }
+    .btn.primary:hover{ opacity:.96; filter: drop-shadow(0 16px 28px rgba(255,213,74,.16)); }
+    .btn.ghost{ background: rgba(255,255,255,.06); }
+    .btn.whatsapp{
+      background: linear-gradient(135deg, rgba(37,211,102,.90), rgba(18,140,126,.86));
+      color:#07140c;
+      border-color: rgba(255,255,255,.22);
+    }
+    .btn.market{
+      background: linear-gradient(135deg, rgba(57,217,138,.90), rgba(10,160,110,.84));
+      color:#04110a;
+      border-color: rgba(255,255,255,.22);
+    }
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .dot{width:8px;height:8px;border-radius:99px;background:var(--accent); box-shadow:0 0 18px rgba(255,213,74,.5);}
+
+    /* ===== Navbar ===== */
+    .nav{position:sticky; top:14px; z-index:50; margin: 14px auto 0;}
+    .nav-inner{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 12px 14px;
+      border-radius: 18px;
+    }
+    .brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text);}
+    .brand strong{letter-spacing:.3px}
+    .brand img{width:40px;height:40px;object-fit:contain;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);padding:6px}
+    .nav-links{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+    .nav-links a{
+      color: var(--muted);
+      text-decoration:none;
+      font-weight:800;
+      font-size: 13px;
+      letter-spacing:.2px;
+      padding: 10px 10px;
+      border-radius: 12px;
+      transition: background .18s ease, color .18s ease;
+    }
+    .nav-links a:hover{ color: var(--text); background: rgba(255,255,255,.06); }
+    .nav-links a.active{ color: rgba(255,255,255,.92); background: rgba(57,217,138,.10); border:1px solid rgba(57,217,138,.20); }
+
+    .nav-actions{display:flex; align-items:center; gap:10px;}
+    .cart-pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      cursor:pointer;
+      user-select:none;
+      transition: transform .18s ease, background .18s ease;
+    }
+    .cart-pill:hover{transform: translateY(-1px); background: rgba(255,255,255,.09);}
+    .cart-count{
+      min-width:20px;
+      padding:2px 7px;
+      border-radius:999px;
+      background: rgba(255,213,74,.95);
+      color:#13110b;
+      font-weight:900;
+      font-size:12px;
+    }
+
+    /* ===== Hero ===== */
+    .hero{padding-top: 22px; padding-bottom: 64px;}
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 22px;
+      align-items:stretch;
+      margin-top: 14px;
+    }
+    .hero-copy{
+      padding: 22px;
+      border-radius: var(--radius2);
+      min-height: 440px;
+      position:relative;
+      overflow:hidden;
+      transform-style: preserve-3d;
+    }
+    .hero-copy::before{
+      content:"";
+      position:absolute; inset:-40%;
+      background:
+        radial-gradient(closest-side, rgba(57,217,138,.16), transparent 70%),
+        radial-gradient(closest-side, rgba(255,213,74,.14), transparent 70%),
+        radial-gradient(closest-side, rgba(255,59,92,.08), transparent 72%);
+      filter: blur(18px);
+      transform: translate3d(0,0,0);
+      opacity:.95;
+    }
+    .hero-copy > *{position:relative; z-index:1}
+    .hero h1{
+      margin: 10px 0 10px;
+      font-size: clamp(34px, 4.2vw, 58px);
+      letter-spacing:.2px;
+      line-height: 1.02;
+    }
+    .hero p{color: var(--muted); max-width: 62ch; margin: 0 0 18px; line-height: 1.6;}
+    .hero-cta{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top: 12px;}
+    .hero-note{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;}
+
+    .hero-right{
+      border-radius: var(--radius2);
+      overflow:hidden;
+      position:relative;
+      min-height: 440px;
+      transform-style: preserve-3d;
+    }
+
+    /* Cinematic glow rim */
+    .hero-right::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(closest-side at 50% 35%, rgba(255,213,74,.18), transparent 58%),
+                  radial-gradient(closest-side at 70% 70%, rgba(57,217,138,.16), transparent 60%);
+      filter: blur(16px);
+      pointer-events:none;
+      opacity:.9;
+    }
+
+    #threeWrap{
+      position:absolute; inset:0;
+      background: radial-gradient(900px 420px at 40% 30%, rgba(255,255,255,.10), transparent 55%),
+                  radial-gradient(700px 340px at 70% 70%, rgba(57,217,138,.12), transparent 60%),
+                  radial-gradient(620px 320px at 20% 80%, rgba(255,213,74,.10), transparent 60%),
+                  rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.16);
+    }
+    canvas#three{width:100% !important; height:100% !important; display:block;}
+
+    .three-overlay{
+      position:absolute; inset:auto 14px 14px 14px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding: 12px 12px;
+      border-radius: 18px;
+    }
+    .three-overlay small{color:var(--muted); line-height:1.4}
+    .kbd{
+      padding: 6px 10px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.18);
+      font-weight:800;
+      letter-spacing:.3px;
+      font-size:12px;
+      color: rgba(255,255,255,.88);
+    }
+
+    /* ===== About ===== */
+    .about-grid{display:grid; grid-template-columns: 1.1fr .9fr; gap: 18px; align-items: start;}
+    .about-copy{padding:20px}
+    .about-stats{display:grid; grid-template-columns: 1fr 1fr; gap: 12px;}
+    .stat{
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.12);
+      position:relative;
+      overflow:hidden;
+    }
+    .stat::before{
+      content:"";
+      position:absolute; inset:-40%;
+      background: radial-gradient(closest-side, rgba(57,217,138,.14), transparent 65%);
+      filter: blur(18px);
+      opacity:.5;
+    }
+    .stat > *{position:relative}
+    .stat strong{display:block; font-size: 22px; letter-spacing:.2px;}
+    .stat span{color:var(--muted); font-size: 12px}
+
+    /* ===== Products ===== */
+    .product-grid{display:grid; grid-template-columns: repeat(6, 1fr); gap: 12px;}
+    .product{
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      position:relative;
+      min-height: 260px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      transform-style: preserve-3d;
+      transition: transform .22s ease, border-color .22s ease, background .22s ease, filter .22s ease;
+      will-change: transform;
+    }
+    .product::before{
+      content:"";
+      position:absolute; inset:-60%;
+      background: radial-gradient(closest-side, var(--glow, rgba(255,213,74,.18)), transparent 60%);
+      filter: blur(22px);
+      opacity:.75;
+      transform: translate3d(0,0,0);
+      pointer-events:none;
+    }
+    .product:hover{
+      border-color: rgba(255,255,255,.22);
+      background: rgba(255,255,255,.06);
+      filter: drop-shadow(0 18px 34px rgba(0,0,0,.35));
+    }
+
+    .thumb{
+      height: 104px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.03);
+      position:relative;
+      overflow:hidden;
+      transform: translateZ(18px);
+    }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      border-radius:14px;
+      transform: scale(1.02);
+      transition: transform .28s ease, filter .28s ease;
+      filter: saturate(1.05) contrast(1.03);
+    }
+    .product:hover .thumb img{ transform: scale(1.08); filter: saturate(1.14) contrast(1.08); }
+
+    .product h3{margin:0; font-size: 14px; letter-spacing:.2px; transform: translateZ(14px)}
+    .product p{margin:0; color:var(--muted); font-size: 12px; line-height:1.45; transform: translateZ(10px)}
+    .price-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:auto; transform: translateZ(16px)}
+    .price{font-weight:900; color: rgba(255,255,255,.92); font-size: 13px}
+    .mini{padding:9px 10px; border-radius: 12px; font-size: 12px}
+
+    /* ===== Gallery ===== */
+    .gallery-grid{display:grid; grid-template-columns: repeat(12, 1fr); gap: 12px;}
+    .shot{
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      overflow:hidden;
+      position:relative;
+      min-height: 180px;
+      cursor:pointer;
+      transform-style: preserve-3d;
+      transition: transform .24s ease, border-color .24s ease, filter .24s ease;
+    }
+    .shot::after{
+      content:"";
+      position:absolute; inset:0;
+      background: radial-gradient(closest-side at 30% 30%, rgba(57,217,138,.12), transparent 60%),
+                  radial-gradient(closest-side at 70% 80%, rgba(255,213,74,.10), transparent 65%);
+      opacity:.9;
+      pointer-events:none;
+      mix-blend-mode: overlay;
+    }
+    .shot img{width:100%; height:100%; object-fit:cover; display:block; border-radius:20px; filter:saturate(1.05) contrast(1.02);}
+    .shot:hover{transform: translateY(-2px) scale(1.01); border-color: rgba(255,255,255,.24); filter: drop-shadow(0 18px 34px rgba(0,0,0,.35));}
+    .shot .cap{
+      position:absolute; left:12px; bottom:12px;
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.28);
+      color: rgba(255,255,255,.86);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing:.2px;
+      z-index:2;
+    }
+
+    /* ===== Team ===== */
+    .team-grid{display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px;}
+    .person{
+      padding: 16px;
+      border-radius: 20px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      position:relative;
+      overflow:hidden;
+      transition: transform .2s ease, border-color .2s ease;
+    }
+    .person::before{
+      content:"";
+      position:absolute; inset:-50%;
+      background: radial-gradient(closest-side, rgba(255,213,74,.10), transparent 62%);
+      filter: blur(22px);
+      opacity:.55;
+    }
+    .person > *{position:relative}
+    .person:hover{transform: translateY(-1px); border-color: rgba(255,255,255,.22);}
+    .avatar{
+      width:56px;height:56px;border-radius: 18px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .person strong{display:block; font-size: 14px}
+    .person span{display:block; color:var(--muted); font-size: 12px; margin-top:2px}
+
+    /* ===== Order ===== */
+    .order-grid{display:grid; grid-template-columns: 1.05fr .95fr; gap: 14px; align-items:stretch;}
+    .order-box{padding:20px; border-radius: var(--radius2)}
+    .order-actions{display:flex; flex-wrap:wrap; gap:10px; margin-top: 14px}
+    .order-box p{color:var(--muted); line-height:1.6; margin: 8px 0 0}
+    .order-mini{display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;}
+    .mini-card{
+      padding: 14px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+    }
+    .mini-card strong{display:block; font-size: 13px}
+    .mini-card span{display:block; color:var(--muted); font-size:12px; margin-top:4px}
+
+    /* ===== Footer ===== */
+    footer{padding: 30px 0 46px; color: rgba(255,255,255,.62); font-size: 12px;}
+    .footer-inner{
+      display:flex; gap: 12px; justify-content:space-between; align-items:center; flex-wrap:wrap;
+      padding: 16px 18px;
+      border-radius: 18px;
+    }
+    .linkrow{display:flex; gap:10px; flex-wrap:wrap}
+    .linkrow a{color: rgba(255,255,255,.72); text-decoration:none}
+    .linkrow a:hover{color: rgba(255,255,255,.92)}
+
+    /* ===== Reveal animation (cinematic stagger) ===== */
+    .reveal{opacity:0; transform: translateY(18px) scale(.99); transition: opacity .85s ease, transform .85s cubic-bezier(.2,.8,.2,1); will-change: transform, opacity;}
+    .reveal.in{opacity:1; transform: translateY(0) scale(1);}
+
+    /* ===== Modal Cart ===== */
+    .modal{position:fixed; inset:0; background: rgba(0,0,0,.58); display:none; align-items:center; justify-content:center; z-index: 80; padding: 16px;}
+    .modal.open{display:flex}
+    .modal-panel{width:min(900px, 100%); border-radius: 24px; overflow:hidden;}
+    .modal-head{display:flex; align-items:center; justify-content:space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.12);}
+    .modal-body{display:grid; grid-template-columns: 1.2fr .8fr; gap: 14px; padding: 14px;}
+    .list{display:flex; flex-direction:column; gap:10px; max-height: 54vh; overflow:auto; padding-right:6px;}
+    .item{display:flex; gap: 10px; align-items:center; justify-content:space-between; padding: 12px; border-radius: 18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05);}
+    .item-left{display:flex; gap:10px; align-items:center;}
+    .item-thumb{width:42px; height:42px; border-radius: 14px; border:1px solid rgba(255,255,255,.14); background-image: var(--chip-svg); background-size: 72px 72px; background-position: 50% 55%; background-repeat:no-repeat; opacity:.9;}
+    .item strong{display:block; font-size: 13px}
+    .item span{display:block; color:var(--muted); font-size: 12px}
+    .qty{display:flex; align-items:center; gap:8px;}
+    .qty button{width:34px; height:34px; border-radius: 12px; border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: rgba(255,255,255,.9); font-weight:900; cursor:pointer;}
+    .summary{padding: 12px; border-radius: 18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); height: fit-content;}
+    .summary-row{display:flex; justify-content:space-between; align-items:center; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,.14); color: rgba(255,255,255,.86); font-size: 13px;}
+    .summary-row:last-child{border-bottom:none}
+    .summary .muted{color:var(--muted); font-size:12px; line-height:1.5; margin-top:10px}
+
+    /* ===== Lightbox for gallery (cinematic) ===== */
+    .lightbox{position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index: 90; padding:18px; background: rgba(0,0,0,.72);}
+    .lightbox.open{display:flex}
+    .lightbox-inner{
+      width:min(980px, 100%);
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(14px);
+      overflow:hidden;
+      position:relative;
+      box-shadow: 0 30px 90px rgba(0,0,0,.55);
+    }
+    .lightbox-inner img{width:100%; height:auto; display:block; max-height: 80vh; object-fit:contain; background: rgba(0,0,0,.18);}
+    .lightbox-bar{display:flex; justify-content:space-between; align-items:center; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.12);}
+    .lightbox-bar small{color: var(--muted)}
+    .iconbtn{border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: rgba(255,255,255,.9); border-radius: 12px; padding: 10px 12px; cursor:pointer; font-weight:900;}
+
+    /* ===== Responsive ===== */
+    @media (max-width: 980px){
+      .hero-grid, .about-grid, .order-grid{grid-template-columns: 1fr}
+      .product-grid{grid-template-columns: repeat(3, 1fr)}
+      .team-grid{grid-template-columns: repeat(2, 1fr)}
+      .modal-body{grid-template-columns: 1fr}
+      .hero-copy{min-height: unset}
+      .hero-right{min-height: 380px}
+    }
+    @media (max-width: 560px){
+      .product-grid{grid-template-columns: repeat(2, 1fr)}
+      .team-grid{grid-template-columns: 1fr}
+      .nav-links{display:none}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="cinema"></div>
+  <div class="grain"></div>
+
+  <!-- Fixed parallax background -->
+  <div class="bg-parallax" id="bg">
+    <div class="chip" data-depth="0.12"></div>
+    <div class="chip" data-depth="0.18"></div>
+    <div class="chip" data-depth="0.22"></div>
+    <div class="chip" data-depth="0.10"></div>
+    <div class="chip" data-depth="0.16"></div>
+    <div class="chip" data-depth="0.26"></div>
+    <div class="chip" data-depth="0.14"></div>
+    <div class="chip" data-depth="0.20"></div>
+    <div class="chip" data-depth="0.08"></div>
+    <div class="chip" data-depth="0.24"></div>
+    <div class="chip" data-depth="0.30"></div>
+    <div class="chip" data-depth="0.11"></div>
+  </div>
+
+  <!-- Navbar -->
+  <div class="container nav">
+    <div class="nav-inner glass reveal">
+      <a class="brand" href="#top">
+        <!-- REAL LOGO -->
+        <img src="/assets/brand/logo.png" alt="Keripik iLiL" />
+        <div style="display:flex;flex-direction:column;line-height:1.05">
+          <strong>Keripik iLiL</strong>
+          <span style="color:var(--muted);font-size:12px">Berani Coba, Berani Ketagihan</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" aria-label="Navigasi">
+        <a href="#tentang">Tentang</a>
+        <a href="#produk">Produk</a>
+        <a href="#galeri">Galeri</a>
+        <a href="#tim">Tim</a>
+        <a href="#pesan">Pesan</a>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="cart-pill" id="cartBtn" role="button" aria-label="Buka keranjang">
+          <span style="opacity:.9">🛒</span>
+          <span style="font-weight:900">Cart</span>
+          <span class="cart-count" id="cartCount">0</span>
+        </div>
+        <a class="btn primary" href="#pesan">Order</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <header class="section hero" id="top">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-copy glass reveal" id="heroTilt">
+          <div class="badge"><span class="dot"></span> Bandung • Banana Chips • Tanpa MSG (sesuaikan)</div>
+
+          <!-- TAGLINE (requested) -->
+          <h1>
+            <span style="color:var(--accent)">Berani Coba</span><br/>
+            <span style="color:var(--accent2)">Berani Ketagihan</span>
+          </h1>
+
+          <p>
+            Keripik pisang tipis dengan rasa yang “nempel” dari gigitan pertama.
+            Desain modern glassmorphism + parallax + animasi Three.js untuk vibe premium.
+          </p>
+
+          <div class="hero-cta">
+            <a class="btn whatsapp" id="ctaWa" href="#" title="Pesan via WhatsApp">💬 Pesan WhatsApp</a>
+            <a class="btn market" id="ctaMk" href="#" title="Checkout Marketplace">🛍️ Marketplace</a>
+            <button class="btn primary" id="ctaWeb" type="button" title="Checkout via Web">🧾 Checkout Web</button>
+            <a class="btn ghost" href="#produk" title="Lihat varian rasa">🍌 Pilih Rasa</a>
+          </div>
+
+          <div class="hero-note">
+            <span class="badge">✨ Cinematic: tilt hover + glow + film grain</span>
+            <span class="badge">🎛️ Scroll = parallax + motion kamera</span>
+          </div>
+        </div>
+
+        <div class="hero-right glass reveal" id="threeTilt" aria-label="Animasi produk utama (real pack)">
+          <div id="threeWrap">
+            <canvas id="three"></canvas>
+          </div>
+          <div class="three-overlay glass">
+            <small>
+              <b>Produk Utama (Real Pack)</b><br/>
+              Three.js menampilkan foto pack kamu + chip particles.
+            </small>
+            <span class="kbd">SCROLL</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TENTANG -->
+  <section class="section compact" id="tentang">
+    <div class="container">
+      <div class="section-title reveal">
+        <div>
+          <h2>Tentang Keripik iLiL</h2>
+          <p>Story brand versi modern—tinggal tempel narasi asli kamu.</p>
+        </div>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-copy glass reveal">
+          <p style="margin:0;color:var(--muted);line-height:1.75">
+            Keripik iLiL dibuat tipis, renyah, dan cocok jadi teman santai.
+            Fokus kami: rasa konsisten, packaging rapi, dan pengalaman beli yang gampang.
+          </p>
+        </div>
+
+        <div class="about-stats">
+          <div class="stat reveal">
+            <strong>6+</strong>
+            <span>Varian rasa</span>
+          </div>
+          <div class="stat reveal">
+            <strong>Bandung</strong>
+            <span>Asal produksi</span>
+          </div>
+          <div class="stat reveal">
+            <strong>Fast Order</strong>
+            <span>WA • Market • Web</span>
+          </div>
+          <div class="stat reveal">
+            <strong>Premium Look</strong>
+            <span>Glass + Cinematic</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUK -->
+  <section class="section" id="produk">
+    <div class="container">
+      <div class="section-title reveal">
+        <div>
+          <h2>Varian Rasa</h2>
+          <p>Semua card pakai foto asli. Hover = cinematic tilt + glow beda per varian.</p>
+        </div>
+        <span class="badge">💡 Harga bisa kamu sesuaikan</span>
+      </div>
+
+      <div class="product-grid" id="productGrid"></div>
+    </div>
+  </section>
+
+  <!-- GALERI -->
+  <section class="section compact" id="galeri">
+    <div class="container">
+      <div class="section-title reveal">
+        <div>
+          <h2>Galeri</h2>
+          <p>Klik foto untuk cinematic lightbox.</p>
+        </div>
+      </div>
+
+      <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+  </section>
+
+  <!-- TIM -->
+  <section class="section compact" id="tim">
+    <div class="container">
+      <div class="section-title reveal">
+        <div>
+          <h2>Tim Kami</h2>
+          <p>Ganti avatar tim nanti. (Sementara pakai logo/placeholder)</p>
+        </div>
+      </div>
+
+      <div class="team-grid">
+        <div class="person reveal">
+          <div class="avatar"><img src="/assets/brand/logo.png" alt="Icha"></div>
+          <div><strong>Icha</strong><span>Founder</span></div>
+        </div>
+        <div class="person reveal">
+          <div class="avatar"><img src="/assets/brand/logo.png" alt="Beno"></div>
+          <div><strong>Beno</strong><span>Tim IT</span></div>
+        </div>
+        <div class="person reveal">
+          <div class="avatar"><img src="/assets/brand/logo.png" alt="Mah Jijil"></div>
+          <div><strong>Mah Jijil</strong><span>Produksi</span></div>
+        </div>
+        <div class="person reveal">
+          <div class="avatar"><img src="/assets/brand/logo.png" alt="Kika"></div>
+          <div><strong>Kika</strong><span>Umum</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PESAN -->
+  <section class="section" id="pesan">
+    <div class="container">
+      <div class="section-title reveal">
+        <div>
+          <h2>Pesan Sekarang</h2>
+          <p>WA / Marketplace / Checkout Web (cart).</p>
+        </div>
+      </div>
+
+      <div class="order-grid">
+        <div class="order-box glass reveal">
+          <div class="badge"><span class="dot"></span> Checkout cepat • Link tinggal ganti</div>
+          <h3 style="margin:10px 0 0">Pilih cara beli yang paling nyaman.</h3>
+          <p>
+            1) <b>WhatsApp</b> untuk tanya stok/ongkir cepat. <br/>
+            2) <b>Marketplace</b> untuk voucher & promo. <br/>
+            3) <b>Web Checkout</b> untuk experience brand yang rapih (cart).
+          </p>
+
+          <div class="order-actions">
+            <a class="btn whatsapp" id="orderWa" href="#">💬 Pesan via WhatsApp</a>
+            <a class="btn market" id="orderMk" href="#">🛍️ Checkout Marketplace</a>
+            <button class="btn primary" id="orderWeb" type="button">🧾 Checkout di Web</button>
+          </div>
+
+          <div class="order-mini">
+            <div class="mini-card">
+              <strong>Jam Operasional</strong>
+              <span>09:00–21:00</span>
+            </div>
+            <div class="mini-card">
+              <strong>Lokasi</strong>
+              <span>Bandung, Indonesia</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-box glass reveal">
+          <h3 style="margin:0 0 10px">Info Kontak</h3>
+          <div class="mini-card" style="margin-bottom:12px">
+            <strong>WhatsApp</strong>
+            <span id="waText">+62 8xx-xxxx-xxxx</span>
+          </div>
+          <div class="mini-card" style="margin-bottom:12px">
+            <strong>Marketplace</strong>
+            <span>Shopee / Tokopedia</span>
+          </div>
+          <div class="mini-card">
+            <strong>Email</strong>
+            <span>hello@keripikilil.example</span>
+          </div>
+
+          <p style="margin-top:12px;color:var(--muted)">
+            Tips: ganti link WA pakai format <code>https://wa.me/62xxxx</code> + pesan default.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner glass reveal">
+        <div style="display:flex; align-items:center; gap:10px">
+          <img src="/assets/brand/logo.png" alt="Keripik iLiL" style="width:34px;height:34px;object-fit:contain;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);padding:6px" />
+          <div>
+            <div style="font-weight:900; color: rgba(255,255,255,.86)">Keripik iLiL</div>
+            <div style="color: rgba(255,255,255,.60)">© 2026 — Cinematic Glass Template</div>
+          </div>
+        </div>
+        <div class="linkrow">
+          <a href="#tentang">Tentang</a>
+          <a href="#produk">Produk</a>
+          <a href="#galeri">Galeri</a>
+          <a href="#tim">Tim</a>
+          <a href="#pesan">Pesan</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cart Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-panel glass">
+      <div class="modal-head">
+        <div style="display:flex; align-items:center; gap:10px">
+          <span style="font-size:18px">🛒</span>
+          <div>
+            <div style="font-weight:900">Keranjang</div>
+            <div style="color:var(--muted); font-size:12px">Tambah produk dari section “Varian Rasa”.</div>
+          </div>
+        </div>
+        <button class="btn ghost" id="closeModal" type="button">Tutup</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="list" id="cartList"></div>
+
+        <div class="summary">
+          <div class="summary-row">
+            <span>Total item</span>
+            <b id="sumItems">0</b>
+          </div>
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <b id="sumSubtotal">Rp 0</b>
+          </div>
+          <div class="summary-row">
+            <span>Ongkir</span>
+            <b style="color:var(--muted)">Nanti</b>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px">
+            <a class="btn whatsapp" id="checkoutWa" href="#">💬 Checkout WA</a>
+            <a class="btn market" id="checkoutMk" href="#">🛍️ Marketplace</a>
+            <button class="btn primary" id="checkoutWeb" type="button">🧾 Pay</button>
+          </div>
+
+          <div class="muted">
+            Ini templating. Nanti bisa disambungkan ke backend + payment.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gallery Lightbox -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lightbox-inner">
+      <img id="lightImg" alt="Preview Galeri">
+      <div class="lightbox-bar">
+        <small id="lightCap">Galeri</small>
+        <div style="display:flex; gap:8px">
+          <button class="iconbtn" id="prevImg" type="button">‹</button>
+          <button class="iconbtn" id="nextImg" type="button">›</button>
+          <button class="iconbtn" id="closeLight" type="button">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js -->
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+
+    const $ = (q, el=document) => el.querySelector(q);
+    const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+    /* =========================
+       CONFIG: ganti link kamu
+    ========================== */
+    const ASSETS = {
+      logo: "/assets/brand/logo.png",
+      heroPack: "/assets/products/pack-hero.png",
+      variants: {
+        original: "/assets/variants/original.jpg",
+        coklat:  "/assets/variants/coklat.jpg",
+        keju:    "/assets/variants/keju.jpg",
+        balado:  "/assets/variants/balado.jpg",
+        pedas:   "/assets/variants/pedas.jpg"
+      },
+      gallery: [
+        {src: "/assets/gallery/g1.jpg", cap: "Galeri 01"},
+        {src: "/assets/gallery/g2.jpg", cap: "Galeri 02"},
+        {src: "/assets/gallery/g3.jpg", cap: "Galeri 03"},
+        {src: "/assets/gallery/g4.jpg", cap: "Galeri 04"},
+      ]
+    };
+
+    // WA/Marketplace/Web
+    const WA_NUMBER = "628xxxxxxxxxx"; // TODO
+    const MARKET_URL = "#";           // TODO
+    const WEB_CHECKOUT_URL = "#";     // TODO (opsional)
+
+    /* =========================
+       Reveal cinematic
+    ========================== */
+    const io = new IntersectionObserver((entries)=>{
+      for (const e of entries){
+        if (e.isIntersecting) e.target.classList.add("in");
+      }
+    }, {threshold: 0.12});
+    $$(".reveal").forEach(el=>io.observe(el));
+
+    /* =========================
+       Parallax background chips
+    ========================== */
+    const bg = $("#bg");
+    const chips = $$(".chip", bg);
+
+    const seed = 1337;
+    function rand(i){
+      let x = (seed + i*99991) >>> 0;
+      x = (x * 1664525 + 1013904223) >>> 0;
+      return x / 2**32;
+    }
+    chips.forEach((c, i)=>{
+      const r1 = rand(i*3+1), r2 = rand(i*3+2), r3 = rand(i*3+3);
+      const left = Math.round(r1 * 100);
+      const top = Math.round(r2 * 120) - 10;
+      const s = 0.55 + r3 * 0.75;
+      const rot = (r2*70 - 35);
+      c.style.left = left + "vw";
+      c.style.top = top + "vh";
+      c.style.transform = `translate3d(0,0,0) rotate(${rot}deg) scale(${s})`;
+      c.dataset.baseRot = String(rot);
+      c.dataset.baseScale = String(s);
+    });
+
+    let scrollY = 0;
+    let targetScroll = 0;
+    function updateParallax(){
+      scrollY += (targetScroll - scrollY) * 0.08;
+      const t = scrollY;
+
+      chips.forEach((c, i)=>{
+        const depth = parseFloat(c.dataset.depth || "0.15");
+        const baseRot = parseFloat(c.dataset.baseRot || "0");
+        const baseScale = parseFloat(c.dataset.baseScale || "1");
+        const x = Math.sin((t*0.0012) + i) * (18 * depth);
+        const y = (t * depth * 0.22);
+        const rot = baseRot + (t*0.01*depth);
+        c.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg) scale(${baseScale})`;
+      });
+
+      bg.style.transform = `translate3d(0, ${-(t*0.04)}px, 0)`;
+      requestAnimationFrame(updateParallax);
+    }
+    window.addEventListener("scroll", ()=>{ targetScroll = window.scrollY || 0; }, {passive:true});
+    updateParallax();
+
+    /* =========================
+       Product data-driven render
+    ========================== */
+    const products = [
+      {key:"original", name:"Original", desc:"Rasa natural & gurih. Tipis, renyah.", price:15000, img: ASSETS.variants.original, glow:"rgba(255,213,74,.22)"},
+      {key:"keju",     name:"Keju",     desc:"Aroma keju creamy, balance manis.",  price:15000, img: ASSETS.variants.keju,     glow:"rgba(255,255,255,.18)"},
+      {key:"balado",   name:"Balado",   desc:"Pedas-manis gurih, bikin nagih.",   price:15000, img: ASSETS.variants.balado,   glow:"rgba(255,120,60,.20)"},
+      {key:"coklat",   name:"Coklat",   desc:"Manis coklat tebal, cocok dessert.",price:17000, img: ASSETS.variants.coklat,   glow:"rgba(120,75,45,.22)"},
+      {key:"pedas",    name:"Pedas",    desc:"Lebih nendang untuk pecinta pedas.", price:15000, img: ASSETS.variants.pedas,    glow:"rgba(255,59,92,.18)"},
+      {key:"pedas2",   name:"Pedas Level 2", desc:"Kalau mau extra nendang (dummy).", price:15000, img: ASSETS.variants.pedas, glow:"rgba(255,59,92,.22)"},
+    ];
+
+    const productGrid = $("#productGrid");
+    const rupiah = (n)=> "Rp " + (n||0).toLocaleString("id-ID");
+
+    function renderProducts(){
+      productGrid.innerHTML = products.map(p=>`
+        <div class="product reveal tilt" style="--glow:${p.glow}" data-name="${p.name}" data-price="${p.price}">
+          <div class="thumb"><img src="${p.img}" alt="${p.name}"></div>
+          <h3>${p.name}</h3>
+          <p>${p.desc}</p>
+          <div class="price-row">
+            <span class="price">${rupiah(p.price)}</span>
+            <button class="btn mini primary add" type="button" data-name="${p.name}" data-price="${p.price}">Tambah</button>
+          </div>
+        </div>
+      `).join("");
+      $$(".reveal", productGrid).forEach(el=>io.observe(el));
+    }
+    renderProducts();
+
+    /* =========================
+       Cinematic tilt (cards + hero)
+    ========================== */
+    function addTilt(el, strength=10){
+      let rAF = null;
+      const onMove = (e)=>{
+        const rect = el.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width;
+        const py = (e.clientY - rect.top) / rect.height;
+        const rx = (0.5 - py) * strength;
+        const ry = (px - 0.5) * strength;
+        if (rAF) cancelAnimationFrame(rAF);
+        rAF = requestAnimationFrame(()=>{
+          el.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-1px)`;
+        });
+      };
+      const onLeave = ()=>{
+        if (rAF) cancelAnimationFrame(rAF);
+        el.style.transform = `perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+      };
+      el.addEventListener("mousemove", onMove);
+      el.addEventListener("mouseleave", onLeave);
+    }
+
+    addTilt($("#heroTilt"), 6);
+    addTilt($("#threeTilt"), 5);
+
+    // tilt for product cards
+    function bindCardTilts(){
+      $$(".product.tilt").forEach(el=> addTilt(el, 10));
+    }
+    bindCardTilts();
+
+    /* =========================
+       Cart (same behavior)
+    ========================== */
+    const cart = new Map();
+    const cartCount = $("#cartCount");
+    const modal = $("#modal");
+    const cartList = $("#cartList");
+    const sumItems = $("#sumItems");
+    const sumSubtotal = $("#sumSubtotal");
+
+    function renderCart(){
+      cartList.innerHTML = "";
+      let items = 0;
+      let subtotal = 0;
+
+      for (const [name, it] of cart.entries()){
+        items += it.qty;
+        subtotal += it.qty * it.price;
+
+        const row = document.createElement("div");
+        row.className = "item";
+        row.innerHTML = `
+          <div class="item-left">
+            <div class="item-thumb" aria-hidden="true"></div>
+            <div>
+              <strong>${name}</strong>
+              <span>${rupiah(it.price)} • qty ${it.qty}</span>
+            </div>
+          </div>
+          <div class="qty">
+            <button type="button" data-act="dec" aria-label="Kurangi">−</button>
+            <b style="min-width:18px;text-align:center">${it.qty}</b>
+            <button type="button" data-act="inc" aria-label="Tambah">+</button>
+            <button type="button" data-act="rm" aria-label="Hapus" style="margin-left:6px">✕</button>
+          </div>
+        `;
+        row.querySelector('[data-act="dec"]').onclick = ()=>updateQty(name, -1);
+        row.querySelector('[data-act="inc"]').onclick = ()=>updateQty(name, +1);
+        row.querySelector('[data-act="rm"]').onclick = ()=>removeItem(name);
+        cartList.appendChild(row);
+      }
+
+      cartCount.textContent = String(items);
+      sumItems.textContent = String(items);
+      sumSubtotal.textContent = rupiah(subtotal);
+
+      if (cart.size === 0){
+        const empty = document.createElement("div");
+        empty.className = "item";
+        empty.style.justifyContent = "center";
+        empty.style.color = "rgba(255,255,255,.7)";
+        empty.innerHTML = "Keranjang masih kosong. Tambah produk dulu ya 🙂";
+        cartList.appendChild(empty);
+      }
+      bindLinks(); // refresh WA message
+    }
+
+    function addItem(name, price){
+      const cur = cart.get(name) || {price, qty:0};
+      cur.price = price;
+      cur.qty += 1;
+      cart.set(name, cur);
+      renderCart();
+    }
+    function updateQty(name, delta){
+      const it = cart.get(name);
+      if (!it) return;
+      it.qty = Math.max(1, it.qty + delta);
+      cart.set(name, it);
+      renderCart();
+    }
+    function removeItem(name){
+      cart.delete(name);
+      renderCart();
+    }
+
+    function openCart(){ modal.classList.add("open"); renderCart(); }
+    function closeCart(){ modal.classList.remove("open"); }
+
+    $("#cartBtn").onclick = openCart;
+    $("#closeModal").onclick = closeCart;
+    modal.addEventListener("click", (e)=>{ if (e.target === modal) closeCart(); });
+
+    // bind add buttons
+    document.addEventListener("click", (e)=>{
+      const btn = e.target.closest(".add");
+      if (!btn) return;
+      addItem(btn.dataset.name, parseInt(btn.dataset.price, 10));
+    });
+
+    /* =========================
+       Dummy checkout links
+    ========================== */
+    function buildWAMessage(){
+      let msg = "Halo Keripik iLiL, saya mau pesan:%0A";
+      let i = 1;
+      for (const [name, it] of cart.entries()){
+        msg += `${i}. ${name} x${it.qty}%0A`;
+        i++;
+      }
+      msg += "%0ATerima kasih!";
+      return msg;
+    }
+
+    function bindLinks(){
+      const waLink = `https://wa.me/${WA_NUMBER}?text=${buildWAMessage()}`;
+      $("#ctaWa").href = waLink;
+      $("#orderWa").href = waLink;
+      $("#checkoutWa").href = waLink;
+
+      $("#ctaMk").href = MARKET_URL;
+      $("#orderMk").href = MARKET_URL;
+      $("#checkoutMk").href = MARKET_URL;
+
+      const goWeb = ()=>{
+        if (cart.size === 0) openCart();
+        else {
+          alert("Dummy checkout web. Nanti arahkan ke route /checkout + kirim cart.");
+          // location.href = WEB_CHECKOUT_URL;
+        }
+      };
+      $("#ctaWeb").onclick = goWeb;
+      $("#orderWeb").onclick = goWeb;
+      $("#checkoutWeb").onclick = goWeb;
+
+      $("#waText").textContent = "+" + WA_NUMBER;
+    }
+    bindLinks();
+
+    /* =========================
+       Gallery render + cinematic lightbox
+    ========================== */
+    const galleryGrid = $("#galleryGrid");
+    function renderGallery(){
+      // 4 images (requested)
+      const layout = [
+        {span:4, i:0}, {span:4, i:1}, {span:4, i:2},
+        {span:12, i:3},
+      ];
+      galleryGrid.innerHTML = layout.map((x, idx)=>{
+        const g = ASSETS.gallery[x.i];
+        return `
+          <div class="shot reveal" style="grid-column: span ${x.span}" data-i="${x.i}">
+            <img src="${g.src}" alt="${g.cap}">
+            <div class="cap">📸 ${g.cap}</div>
+          </div>
+        `;
+      }).join("");
+      $$(".reveal", galleryGrid).forEach(el=>io.observe(el));
+    }
+    renderGallery();
+
+    const lightbox = $("#lightbox");
+    const lightImg = $("#lightImg");
+    const lightCap = $("#lightCap");
+    let lightIndex = 0;
+
+    function openLight(i){
+      lightIndex = i;
+      const g = ASSETS.gallery[lightIndex];
+      lightImg.src = g.src;
+      lightCap.textContent = g.cap;
+      lightbox.classList.add("open");
+      lightbox.setAttribute("aria-hidden", "false");
+    }
+    function closeLight(){
+      lightbox.classList.remove("open");
+      lightbox.setAttribute("aria-hidden", "true");
+    }
+    function nextLight(dir){
+      const n = ASSETS.gallery.length;
+      lightIndex = (lightIndex + dir + n) % n;
+      const g = ASSETS.gallery[lightIndex];
+      lightImg.src = g.src;
+      lightCap.textContent = g.cap;
+    }
+
+    galleryGrid.addEventListener("click", (e)=>{
+      const shot = e.target.closest(".shot");
+      if (!shot) return;
+      openLight(parseInt(shot.dataset.i, 10));
+    });
+    $("#closeLight").onclick = closeLight;
+    $("#prevImg").onclick = ()=>nextLight(-1);
+    $("#nextImg").onclick = ()=>nextLight(+1);
+    lightbox.addEventListener("click", (e)=>{ if (e.target === lightbox) closeLight(); });
+
+    /* =========================
+       Scroll-spy active nav
+    ========================== */
+    const navLinks = $$(".nav-links a");
+    const sections = navLinks.map(a => $(a.getAttribute("href"))).filter(Boolean);
+    const spy = new IntersectionObserver((entries)=>{
+      entries.forEach(en=>{
+        if (!en.isIntersecting) return;
+        const id = "#" + en.target.id;
+        navLinks.forEach(a=>a.classList.toggle("active", a.getAttribute("href") === id));
+      });
+    }, {threshold: 0.45});
+    sections.forEach(s=>spy.observe(s));
+
+    /* =========================
+       Three.js cinematic hero
+       - Real pack texture plane (instead of dummy pouch)
+       - Chip particles orbit
+       - Scroll affects camera & motion
+    ========================== */
+    const canvas = $("#three");
+    const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    camera.position.set(0, 0.65, 4.4);
+
+    // Lights (cinematic)
+    const key = new THREE.DirectionalLight(0xffffff, 1.1);
+    key.position.set(2.5, 3.2, 2.2);
+    scene.add(key);
+
+    const fill = new THREE.DirectionalLight(0xffffff, 0.55);
+    fill.position.set(-3.2, 1.4, 2.0);
+    scene.add(fill);
+
+    const rim = new THREE.PointLight(0xffd54a, 1.1, 14);
+    rim.position.set(0.8, 1.0, -2.6);
+    scene.add(rim);
+
+    const greenRim = new THREE.PointLight(0x39d98a, 0.9, 14);
+    greenRim.position.set(-1.0, 0.8, -2.2);
+    scene.add(greenRim);
+
+    // soft fog for depth
+    scene.fog = new THREE.FogExp2(0x07130c, 0.05);
+
+    const group = new THREE.Group();
+    scene.add(group);
+
+    // Background “stage” ring
+    const plate = new THREE.Mesh(
+      new THREE.CircleGeometry(1.65, 80),
+      new THREE.MeshStandardMaterial({color: 0x06130c, roughness:0.9, metalness:0.02, transparent:true, opacity:0.52})
+    );
+    plate.rotation.x = -Math.PI/2;
+    plate.position.y = -1.12;
+    group.add(plate);
+
+    // Real Pack Plane
+    const loader = new THREE.TextureLoader();
+    const packTex = loader.load(ASSETS.heroPack);
+    packTex.colorSpace = THREE.SRGBColorSpace;
+    packTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+    // ratio: approximate pouch tall
+    const pack = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.95, 2.75, 1, 1),
+      new THREE.MeshStandardMaterial({
+        map: packTex,
+        transparent: true,
+        roughness: 0.65,
+        metalness: 0.02
+      })
+    );
+    pack.position.set(0, 0.05, 0.6);
+    group.add(pack);
+
+    // subtle shadow plane behind pack
+    const shadow = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.2, 3.1),
+      new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0.18})
+    );
+    shadow.position.set(0.05, 0.02, 0.45);
+    group.add(shadow);
+
+    // Chip particles
+    const chipCount = 42;
+    const chipGeo = new THREE.PlaneGeometry(0.32, 0.32);
+    const chips3D = [];
+
+    for (let i=0;i<chipCount;i++){
+      const mat = new THREE.MeshStandardMaterial({
+        color: 0xffd54a,
+        roughness: 0.75,
+        metalness: 0.04,
+        transparent: true,
+        opacity: 0.16 + Math.random()*0.26,
+        side: THREE.DoubleSide
+      });
+      const m = new THREE.Mesh(chipGeo, mat);
+      const a = i / chipCount * Math.PI*2;
+      const r = 1.9 + (i%7)*0.08;
+      m.position.set(Math.cos(a)*r, (i%9)*0.14 - 0.6, Math.sin(a)*r);
+      m.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+      group.add(m);
+      chips3D.push(m);
+    }
+
+    // Resize
+    function resize(){
+      const wrap = $("#threeWrap");
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    // Animate
+    let t0 = performance.now();
+    function animate(now){
+      const dt = (now - t0) / 1000;
+      t0 = now;
+
+      const s = clamp((window.scrollY || 0) / (document.body.scrollHeight - innerHeight + 1), 0, 1);
+
+      // Pack motion (cinematic)
+      pack.rotation.y = Math.sin(now*0.00055) * 0.18 + s*0.10;
+      pack.rotation.x = Math.sin(now*0.00045) * 0.06 - s*0.06;
+      pack.position.y = 0.05 + Math.sin(now*0.0010) * 0.03;
+
+      // group orbit
+      group.rotation.y += dt * (0.25 + s*0.55);
+      group.rotation.x = Math.sin(now*0.00055) * 0.06 + s*0.05;
+
+      // chips orbit
+      for (let i=0;i<chips3D.length;i++){
+        const m = chips3D[i];
+        m.rotation.x += dt * (0.35 + i*0.006);
+        m.rotation.y += dt * (0.28 + i*0.007);
+        m.position.y += Math.sin(now*0.001 + i) * 0.0009;
+      }
+
+      // camera micro parallax
+      camera.position.x = Math.sin(now*0.00035) * 0.14;
+      camera.position.y = 0.70 + Math.cos(now*0.0005) * 0.06 - s*0.18;
+      camera.lookAt(0, 0.05, 0);
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    // Close modal/lightbox with ESC
+    window.addEventListener("keydown", (e)=>{
+      if (e.key === "Escape"){
+        closeCart();
+        closeLight();
+      }
+    });
+  </script>
+</body>
+</html>
