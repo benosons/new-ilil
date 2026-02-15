@@ -37,11 +37,33 @@ const WEB_CHECKOUT_URL = "#";
    Reveal cinematic
 ========================== */
 const io = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-        if (e.isIntersecting) e.target.classList.add("in");
-    }
+    entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+            // Stagger effect for items appearing together
+            setTimeout(() => {
+                e.target.classList.add("in");
+            }, i * 80); 
+        }
+    });
 }, { threshold: 0.12 });
 $$(".reveal").forEach(el => io.observe(el));
+
+/* ==========================
+   Sticky Nav
+========================== */
+const nav = document.querySelector(".nav");
+if (nav) {
+    console.log("Nav found, adding sticky listener");
+    window.addEventListener("scroll", () => {
+        if (window.scrollY > 20) {
+            nav.classList.add("scrolled");
+        } else {
+            nav.classList.remove("scrolled");
+        }
+    }, { passive: true });
+} else {
+    console.error("Nav element not found!");
+}
 
 /* ==========================
    Parallax background chips — clusters + mouse parallax
@@ -433,15 +455,14 @@ bindLinks();
 const galleryGrid = $("#galleryGrid");
 
 function renderGallery() {
-    const layout = [
-        { span: 4, i: 0 }, { span: 4, i: 1 }, { span: 4, i: 2 },
-        { span: 12, i: 3 }
-    ];
+    // Grid 4 columns, no loop
+    const layout = [0, 1, 2, 3].map(i => ({ i }));
+
     galleryGrid.innerHTML = layout.map((x) => {
         const g = ASSETS.gallery[x.i];
         return `
-            <div class="shot reveal" style="grid-column: span ${x.span}" data-i="${x.i}">
-                <img src="${g.src}" alt="${g.cap}">
+            <div class="shot reveal" data-i="${x.i}">
+                <img src="${g.src}" alt="${g.cap}" loading="lazy">
                 <div class="cap">📸 ${g.cap}</div>
             </div>
         `;

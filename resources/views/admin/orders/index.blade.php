@@ -5,6 +5,9 @@
     <div class="card">
         <div class="card-header">
             <h3>Daftar Pesanan</h3>
+            <a href="{{ route('admin.orders.export') }}" class="btn btn-primary" target="_blank">
+                <span class="icon">📥</span> Export Excel
+            </a>
         </div>
 
         {{-- Status filter tabs --}}

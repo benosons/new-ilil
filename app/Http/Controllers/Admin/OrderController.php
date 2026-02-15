@@ -10,26 +10,82 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $orders = Order::with('items')
-            ->when($request->status, fn($q, $s) => $q->where('status', $s))
-            ->when($request->search, fn($q, $s) => $q->where('order_number', 'like', "%{$s}%")
-                ->orWhere('customer_name', 'like', "%{$s}%")
-                ->orWhere('customer_phone', 'like', "%{$s}%"))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+        $query = Order::query()->with('items');
 
-        $statusCounts = [
-            'all' => Order::count(),
-            'pending' => Order::where('status', 'pending')->count(),
-            'paid' => Order::where('status', 'paid')->count(),
-            'processing' => Order::where('status', 'processing')->count(),
-            'shipped' => Order::where('status', 'shipped')->count(),
-            'completed' => Order::where('status', 'completed')->count(),
-            'cancelled' => Order::where('status', 'cancelled')->count(),
-        ];
+        if ($request->search) {
+             $query->where(function($q) use ($request) {
+                $q->where('order_number', 'like', "%{$request->search}%")
+                  ->orWhere('customer_name', 'like', "%{$request->search}%")
+                  ->orWhere('customer_phone', 'like', "%{$request->search}%");
+             });
+        }
+
+        if ($request->status && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $orders = $query->latest()->paginate(20)->withQueryString();
+
+        // Status counts for tabs
+        $statuses = ['all', 'pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled'];
+        $statusCounts = [];
+        foreach ($statuses as $s) {
+            if ($s == 'all') {
+                $statusCounts[$s] = Order::count();
+            } else {
+                $statusCounts[$s] = Order::where('status', $s)->count();
+            }
+        }
 
         return view('admin.orders.index', compact('orders', 'statusCounts'));
+    }
+
+    public function export()
+    {
+        $filename = "laporan-penjualan-" . date('Y-m-d-His') . ".csv";
+        $headers = [
+            "Content-Type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=\"$filename\"",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $callback = function() {
+            $handle = fopen('php://output', 'w');
+            
+            // Header Row
+            fputcsv($handle, [
+                'No Order', 'Tanggal', 'Nama Customer', 'No HP', 'Status', 
+                'Total Produk', 'Ongkir', 'Diskon', 'Total Bayar', 'Metode Bayar', 'Kurir', 'Resi'
+            ]);
+
+            // Data Rows
+            $orders = Order::with('items')->latest()->chunk(100, function($orders) use ($handle) {
+                foreach ($orders as $order) {
+                    $itemNames = $order->items->map(fn($i) => "{$i->quantity}x {$i->product_name}")->join('; ');
+                    
+                    fputcsv($handle, [
+                        $order->order_number,
+                        $order->created_at->format('Y-m-d H:i:s'),
+                        $order->customer_name,
+                        $order->customer_phone,
+                        ucfirst($order->status),
+                        $itemNames,
+                        $order->shipping_cost,
+                        $order->discount_amount,
+                        $order->total,
+                        $order->payment_method,
+                        $order->shipping_courier,
+                        $order->tracking_number
+                    ]);
+                }
+            });
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function show(Order $order)

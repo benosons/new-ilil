@@ -8,6 +8,11 @@
     <title>@yield('title', 'Keripik iLiL — Berani Coba, Berani Ketagihan')</title>
     <meta name="description" content="@yield('meta_description', 'Keripik pisang premium dari Bandung. Cinematic landing page dengan glassmorphism, parallax, dan Three.js.')" />
 
+    {{-- Fonts: Outfit --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     {{-- Vite: Tailwind CSS + App JS --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 

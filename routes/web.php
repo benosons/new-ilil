@@ -40,6 +40,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::resource('users', UserController::class);
     Route::resource('products', ProductController::class);
+    Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export'); // Added
     Route::resource('orders', OrderController::class)->only(['index', 'show', 'destroy']);
     Route::resource('vouchers', VoucherController::class); // Added
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');

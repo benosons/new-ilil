@@ -7,6 +7,17 @@
     {{-- Server-side products data for JS --}}
     <script>window.__PRODUCTS__ = @json($productsJson);</script>
 
+    {{-- Background Gradient (Fixed to allow Parallax Z-Index) --}}
+    <div class="bg-root"></div>
+
+    <style>
+        :root {
+            --chip-1-url: url("{{ asset('assets/chips/chip1.png') }}");
+            --chip-2-url: url("{{ asset('assets/chips/chip2.png') }}");
+            --chip-3-url: url("{{ asset('assets/chips/chip3.png') }}");
+        }
+    </style>
+
     {{-- Cinematic overlays --}}
     <div class="cinema"></div>
     <div class="grain"></div>
@@ -15,8 +26,9 @@
     <div class="bg-parallax" id="bg"></div>
 
     {{-- Navbar --}}
-    <div class="container nav">
-        <div class="nav-inner glass reveal">
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-inner glass reveal">
             <a class="brand" href="#top">
                 <img src="{{ asset('assets/brand/logo.png') }}" alt="Keripik iLiL" />
                 <div class="flex flex-col leading-tight">
@@ -43,9 +55,10 @@
             </div>
         </div>
     </div>
+    </nav>
 
     {{-- HERO --}}
-    <header class="section hero" id="top">
+    <header class="section hero" id="top" style="padding-top: 160px;">
         <div class="container">
             <div class="hero-grid">
                 <div class="hero-copy glass reveal" id="heroTilt">
@@ -89,6 +102,26 @@
             </div>
         </div>
     </header>
+
+    {{-- MARQUEE TESTIMONIALS --}}
+    <div class="container">
+        <div class="marquee-wrap">
+            <div class="marquee">
+                @foreach(range(1,10) as $i)
+                    <div class="review-card text-sm">
+                        <div class="flex gap-1 mb-2 text-yellow-400">★★★★★</div>
+                        <p class="mb-2">"Keripiknya renyah banget, bumbunya pas ga pelit!"</p>
+                        <small class="text-white/50">— Customer {{ $i }}</small>
+                    </div>
+                    <div class="review-card text-sm">
+                        <div class="flex gap-1 mb-2 text-yellow-400">★★★★★</div>
+                        <p class="mb-2">"Pengiriman cepet, packaging aman banget."</p>
+                        <small class="text-white/50">— Netizen {{ $i }}</small>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
 
     {{-- TENTANG --}}
     <section class="section compact" id="tentang">
@@ -251,25 +284,75 @@
         </div>
     </section>
 
-    {{-- Footer --}}
-    <footer>
-        <div class="container">
-            <div class="footer-inner glass reveal">
-                <div class="flex items-center gap-2.5">
-                    <img src="{{ asset('assets/brand/logo.png') }}" alt="Keripik iLiL"
-                         class="w-[34px] h-[34px] object-contain rounded-[14px] p-1.5"
-                         style="border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06)" />
-                    <div>
-                        <div class="font-black" style="color: rgba(255,255,255,.86)">Keripik iLiL</div>
-                        <div style="color: rgba(255,255,255,.60)">© {{ date('Y') }} — Cinematic Glass Landing Page</div>
+    {{-- Fat Footer --}}
+    <footer class="footer-fat">
+        <div class="container py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                {{-- Brand --}}
+                <div class="col-span-1">
+                    <div class="flex items-center gap-3 mb-5">
+                        <img src="{{ asset('assets/brand/logo.png') }}" class="w-10 h-10 rounded-xl glass p-1"/>
+                        <span class="font-bold text-xl tracking-tight text-white">iLiL</span>
+                    </div>
+                    <p class="text-sm text-white/60 leading-relaxed mb-6">
+                        Keripik premium dengan cita rasa otentik yang bikin nagih. Teman setia di setiap momen santai.
+                    </p>
+                    <div class="flex gap-3">
+                        <a href="#" class="social-btn">IG</a>
+                        <a href="#" class="social-btn">WA</a>
+                        <a href="#" class="social-btn">TT</a>
+                        <a href="#" class="social-btn">YT</a>
                     </div>
                 </div>
-                <div class="linkrow">
-                    <a href="#tentang">Tentang</a>
-                    <a href="#produk">Produk</a>
-                    <a href="#galeri">Galeri</a>
-                    <a href="#tim">Tim</a>
-                    <a href="#pesan">Pesan</a>
+
+                {{-- Links --}}
+                <div>
+                    <h4 class="text-white font-bold mb-5 text-sm uppercase tracking-wider">Menu</h4>
+                    <ul class="space-y-3 text-sm text-white/60">
+                        <li><a href="#tentang" class="hover:text-accent transition duration-300">Tentang Kami</a></li>
+                        <li><a href="#produk" class="hover:text-accent transition duration-300">Varian Rasa</a></li>
+                        <li><a href="#galeri" class="hover:text-accent transition duration-300">Galeri Foto</a></li>
+                        <li><a href="#tim" class="hover:text-accent transition duration-300">Tim Kami</a></li>
+                    </ul>
+                </div>
+
+                {{-- Contact --}}
+                <div>
+                    <h4 class="text-white font-bold mb-5 text-sm uppercase tracking-wider">Hubungi</h4>
+                    <ul class="space-y-4 text-sm text-white/60">
+                        <li class="flex items-start gap-3">
+                            <span class="opacity-50">📍</span>
+                            <span>Jl. Keripik No. 12<br>Bandung, Jawa Barat</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <span class="opacity-50">📞</span>
+                            <span>+62 812 3456 7890</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <span class="opacity-50">✉️</span>
+                            <span>halo@keripikilil.com</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                 {{-- Newsletter --}}
+                <div>
+                    <h4 class="text-white font-bold mb-5 text-sm uppercase tracking-wider">Update Promo</h4>
+                    <p class="text-xs text-white/50 mb-4 leading-relaxed">Dapetin info diskon & varian baru duluan. Tenang, ga spam kok.</p>
+                    <form class="flex gap-2">
+                        <input type="email" placeholder="Email kamu..." class="glass px-4 py-2.5 rounded-xl text-sm w-full outline-none focus:border-accent border border-white/10 transition placeholder-white/20 bg-transparent text-white">
+                        <button type="button" class="btn primary p-2.5 rounded-xl aspect-square flex items-center justify-center">
+                            <span>→</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="border-t border-white/10 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/30">
+                <p>&copy; {{ date('Y') }} Keripik iLiL. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-white transition">Privacy Policy</a>
+                    <a href="#" class="hover:text-white transition">Terms of Service</a>
                 </div>
             </div>
         </div>
