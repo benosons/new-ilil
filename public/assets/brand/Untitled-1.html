@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Banana Character (Accurate 2.5D)</title>
+  <style>
+    html,body{height:100%}
+    body{margin:0; overflow:hidden; background:#fff;}
+    #info{
+      position:fixed; left:0; right:0; top:10px;
+      text-align:center; font-family:system-ui,Segoe UI,Arial;
+      font-size:12px; color:#222; opacity:.85; pointer-events:none;
+    }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="info">Put <b>logo.png</b> next to this HTML • Drag to rotate • Scroll to zoom</div>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    // ---------- Scene ----------
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xffffff);
+
+    const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+    camera.position.set(0, 0.8, 4.2);
+
+    const renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0, 0.7, 0);
+
+    // ---------- Lights (soft studio) ----------
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xdedede, 1.05));
+
+    const key = new THREE.DirectionalLight(0xffffff, 1.2);
+    key.position.set(3, 5, 4);
+    scene.add(key);
+
+    const rim = new THREE.DirectionalLight(0xffffff, 0.6);
+    rim.position.set(-4, 2, -3);
+    scene.add(rim);
+
+    // ---------- Load the exact image as texture ----------
+    const loader = new THREE.TextureLoader();
+    loader.load(
+      "./logo.png",
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+        // We'll use alpha from PNG if it has transparency.
+        // If your PNG has white background, it still works, but the border won't be "cut out".
+        const matFront = new THREE.MeshStandardMaterial({
+          map: tex,
+          transparent: true,
+          alphaTest: 0.2,        // helps cut edges if PNG has alpha
+          roughness: 0.9,
+          metalness: 0.0
+        });
+
+        // Determine plane aspect from image
+        const imgW = tex.image.width || 1;
+        const imgH = tex.image.height || 1;
+        const aspect = imgW / imgH;
+
+        // Make it a “card” with thickness (2.5D)
+        const height = 2.2;
+        const width = height * aspect;
+        const thickness = 0.12;
+
+        const geo = new THREE.BoxGeometry(width, height, thickness);
+
+        // Materials: front uses texture, sides/back are flat dark outline-ish
+        const sideMat = new THREE.MeshStandardMaterial({
+          color: 0x101010,
+          roughness: 0.8,
+          metalness: 0.0
+        });
+
+        // BoxGeometry order: +X, -X, +Y, -Y, +Z, -Z (front/back depends on axis)
+        // We'll map the texture to the +Z face (index 4).
+        const mats = [sideMat, sideMat, sideMat, sideMat, matFront, sideMat];
+
+        const card = new THREE.Mesh(geo, mats);
+        card.position.set(0, 0.95, 0);
+        scene.add(card);
+
+        // Subtle “outline” bigger box behind (cartoon stroke)
+        const outlineGeo = new THREE.BoxGeometry(width*1.01, height*1.01, thickness*1.2);
+        const outlineMat = new THREE.MeshBasicMaterial({ color: 0x111111, side: THREE.BackSide });
+        const outline = new THREE.Mesh(outlineGeo, outlineMat);
+        outline.position.copy(card.position);
+        scene.add(outline);
+
+        // Tiny parallax: second transparent plane slightly above front (adds depth feel)
+        // Uses same texture but slight offset via UV transform so it looks like front layer
+        const tex2 = tex.clone();
+        tex2.needsUpdate = true;
+        tex2.center.set(0.5, 0.5);
+        tex2.repeat.set(1.0, 1.0);
+        tex2.offset.set(0.0, 0.0);
+
+        const layerMat = new THREE.MeshStandardMaterial({
+          map: tex2,
+          transparent: true,
+          alphaTest: 0.2,
+          roughness: 1.0,
+          metalness: 0.0,
+          opacity: 0.55
+        });
+
+        const layer = new THREE.Mesh(new THREE.PlaneGeometry(width, height), layerMat);
+        layer.position.set(0, 0.95, thickness/2 + 0.006);
+        scene.add(layer);
+
+        // Animation (cute wobble + slight parallax shift)
+        const baseY = card.position.y;
+        function tick() {
+          requestAnimationFrame(tick);
+
+          const t = performance.now() * 0.001;
+
+          // gentle bounce
+          const bob = Math.sin(t * 1.2) * 0.06;
+          card.position.y = baseY + bob;
+          outline.position.y = card.position.y;
+          layer.position.y = card.position.y;
+
+          // cute sway
+          card.rotation.y = Math.sin(t * 0.8) * 0.18;
+          card.rotation.x = Math.sin(t * 0.6) * 0.06;
+          outline.rotation.copy(card.rotation);
+          layer.rotation.copy(card.rotation);
+
+          // micro-parallax (UV drift)
+          tex2.offset.set(Math.sin(t * 0.9) * 0.006, Math.cos(t * 0.7) * 0.006);
+
+          controls.update();
+          renderer.render(scene, camera);
+        }
+        tick();
+      },
+      undefined,
+      (err) => {
+        console.error("Failed to load ./logo.png", err);
+      }
+    );
+
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth/innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+    addEventListener("contextmenu", (e) => e.preventDefault());
+  </script>
+</body>
+</html>
