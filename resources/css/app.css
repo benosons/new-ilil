@@ -177,6 +177,19 @@ body {
 .footer-fat input:focus {
     border-color: var(--accent);
 }
+
+/* ===== Marquee Mask ===== */
+.marquee-wrap {
+    overflow: hidden;
+    position: relative;
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
+}
+.marquee {
+    display: flex; gap: 20px; width: max-content;
+    animation: marquee 40s linear infinite;
+}
+.marquee:hover { animation-play-state: paused; }
 .btn:active { transform: translateY(0) scale(0.96); box-shadow: 0 2px 8px rgba(0,255,136,0.15); filter: brightness(0.95); }
 
 .btn.primary {

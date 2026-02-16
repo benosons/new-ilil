@@ -105,7 +105,7 @@
 
     {{-- MARQUEE TESTIMONIALS --}}
     <div class="container">
-        <div class="marquee-wrap">
+        <div class="marquee-wrap" style="-webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%); mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);">
             <div class="marquee">
                 @foreach(range(1,10) as $i)
                     <div class="review-card text-sm">
