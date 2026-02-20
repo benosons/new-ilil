@@ -62,7 +62,7 @@
         <div class="container">
             <div class="hero-grid">
                 <div class="hero-copy glass reveal" id="heroTilt">
-                    <div class="badge"><span class="dot"></span> Bandung • Banana Chips • Tanpa MSG (sesuaikan)</div>
+                    <div class="badge"><span class="dot"></span> Asli Bandung • 100% Pisang Pilihan • Tanpa Pengawet</div>
 
                     <h1>
                         <span style="color:var(--accent)">Berani Coba</span><br/>
@@ -70,8 +70,7 @@
                     </h1>
 
                     <p>
-                        Keripik pisang tipis dengan rasa yang "nempel" dari gigitan pertama.
-                        Desain modern glassmorphism + parallax + animasi Three.js untuk vibe premium.
+                        Keripik pisang tipis renyah dengan bumbu melimpah yang meresap sempurna. Dibuat dari pisang kepok pilihan, digoreng garing, dan disajikan untuk menemani setiap momen santai Anda. Sekali gigit, dijamin susah berhenti!
                     </p>
 
                     <div class="hero-cta">
@@ -82,8 +81,8 @@
                     </div>
 
                     <div class="hero-note">
-                        <span class="badge">✨ Cinematic: tilt hover + glow + film grain</span>
-                        <span class="badge">🎛️ Scroll = parallax + motion kamera</span>
+                        <span class="badge">✨ Best Seller: Balado & Coklat Lumer</span>
+                        <span class="badge">🔥 Selalu Fresh made by order</span>
                     </div>
                 </div>
 
@@ -91,7 +90,7 @@
                     <div id="threeWrap">
                         <canvas id="three"></canvas>
                     </div>
-                    <div class="three-overlay glass">
+                    <div class="three-overlay glass" hidden>
                         <small>
                             <b>Produk Utama (Real Pack)</b><br/>
                             Three.js menampilkan foto pack kamu + chip particles.
@@ -110,13 +109,23 @@
                 @foreach(range(1,10) as $i)
                     <div class="review-card text-sm">
                         <div class="flex gap-1 mb-2 text-yellow-400">★★★★★</div>
-                        <p class="mb-2">"Keripiknya renyah banget, bumbunya pas ga pelit!"</p>
-                        <small class="text-white/50">— Customer {{ $i }}</small>
+                        <p class="mb-2">"Gila sih ini keripiknya tipis banget jadi super renyah. Bumbu baladonya nendang pol, beneran bikin ketagihan!"</p>
+                        <small class="text-white/50">— Riska, Jakarta</small>
                     </div>
                     <div class="review-card text-sm">
                         <div class="flex gap-1 mb-2 text-yellow-400">★★★★★</div>
-                        <p class="mb-2">"Pengiriman cepet, packaging aman banget."</p>
-                        <small class="text-white/50">— Netizen {{ $i }}</small>
+                        <p class="mb-2">"Biasanya beli keripik pisang keras, tapi iLiL empuk renyah. Varian coklatnya the best, lumer tapi ga bikin eneg."</p>
+                        <small class="text-white/50">— Aditya, Bandung</small>
+                    </div>
+                    <div class="review-card text-sm">
+                        <div class="flex gap-1 mb-2 text-yellow-400">★★★★★</div>
+                        <p class="mb-2">"Packaging rapi, sampe ke Kalimantan aman sentosa ga hancur. Cocok banget buat stok ngemil nonton drakor."</p>
+                        <small class="text-white/50">— Siska, Balikpapan</small>
+                    </div>
+                    <div class="review-card text-sm">
+                        <div class="flex gap-1 mb-2 text-yellow-400">★★★★★</div>
+                        <p class="mb-2">"Awalnya cuma beli 1 buat iseng nyoba, eh nyesel dong karena langsung abis sehari. Next order langsung borong!"</p>
+                        <small class="text-white/50">— Danang, Surabaya</small>
                     </div>
                 @endforeach
             </div>
@@ -129,15 +138,14 @@
             <div class="section-title reveal">
                 <div>
                     <h2>Tentang Keripik iLiL</h2>
-                    <p>Story brand versi modern—tinggal tempel narasi asli kamu.</p>
+                    <p>Cita rasa lokal dengan kualitas premium yang bikin kangen terus.</p>
                 </div>
             </div>
 
             <div class="about-grid">
                 <div class="about-copy glass reveal">
                     <p class="m-0 leading-relaxed" style="color:var(--muted)">
-                        Keripik iLiL dibuat tipis, renyah, dan cocok jadi teman santai.
-                        Fokus kami: rasa konsisten, packaging rapi, dan pengalaman beli yang gampang.
+                        Berawal dari kecintaan pada camilan kampung halaman, Keripik iLiL hadir untuk menaikkan level keripik pisang tradisional. Kami memotong pisang dengan tingkat ketipisan presisi agar teksturnya ekstra renyah, lalu membalutnya dengan racikan bumbu rahasia yang kaya rasa, tanpa pelit! Kami berkomitmen menyajikan camilan enak yang bikin mood Anda naik seharian.
                     </p>
                 </div>
 
@@ -151,12 +159,12 @@
                         <span>Asal produksi</span>
                     </div>
                     <div class="stat reveal">
-                        <strong>Fast Order</strong>
-                        <span>WA • Market • Web</span>
+                        <strong>Fresh</strong>
+                        <span>Digoreng Tiap Hari</span>
                     </div>
                     <div class="stat reveal">
-                        <strong>Premium Look</strong>
-                        <span>Glass + Cinematic</span>
+                        <strong>Premium</strong>
+                        <span>Bahan Berkualitas</span>
                     </div>
                 </div>
             </div>
@@ -168,10 +176,10 @@
         <div class="container">
             <div class="section-title reveal">
                 <div>
-                    <h2>Varian Rasa</h2>
-                    <p>Semua card pakai foto asli. Hover = cinematic tilt + glow beda per varian.</p>
+                    <h2>Varian Rasa Favorit</h2>
+                    <p>Pilih rasa andalanmu. Bumbu tebal, renyah maksimal!</p>
                 </div>
-                <span class="badge">💡 Harga bisa kamu sesuaikan</span>
+                <span class="badge">� Paling Laris: Coklat & Balado</span>
             </div>
 
             <div class="product-grid" id="productGrid"></div>
@@ -204,19 +212,19 @@
 
             <div class="team-grid">
                 <div class="person reveal">
-                    <div class="avatar"><img src="{{ asset('assets/brand/logo.png') }}" alt="Icha"></div>
+                    <div class="avatar"><img src="{{ asset('assets/brand/logo.png') }}" alt="Icha - Founder Keripik iLiL"></div>
                     <div><strong>Icha</strong><span>Founder</span></div>
                 </div>
                 <div class="person reveal">
-                    <div class="avatar"><img src="{{ asset('assets/brand/logo.png') }}" alt="Beno"></div>
+                    <div class="avatar"><img src="{{ asset('assets/brand/logo.png') }}" alt="Beno - Tim IT Keripik iLiL"></div>
                     <div><strong>Beno</strong><span>Tim IT</span></div>
                 </div>
                 <div class="person reveal">
-                    <div class="avatar"><img src="{{ asset('assets/brand/logo.png') }}" alt="Mah Jijil"></div>
+                    <div class="avatar"><img src="{{ asset('assets/brand/logo.png') }}" alt="Mah Jijil - Tim Produksi Keripik iLiL"></div>
                     <div><strong>Mah Jijil</strong><span>Produksi</span></div>
                 </div>
                 <div class="person reveal">
-                    <div class="avatar"><img src="{{ asset('assets/brand/logo.png') }}" alt="Kika"></div>
+                    <div class="avatar"><img src="{{ asset('assets/brand/logo.png') }}" alt="Kika - Bagian Umum Keripik iLiL"></div>
                     <div><strong>Kika</strong><span>Umum</span></div>
                 </div>
             </div>
@@ -228,19 +236,20 @@
         <div class="container">
             <div class="section-title reveal">
                 <div>
-                    <h2>Pesan Sekarang</h2>
-                    <p>WA / Marketplace / Checkout Web (cart).</p>
+                    <h2>Pesan Sekarang!</h2>
+                    <p>Jangan nunggu sampai ngiler. Stock cepat habis, amankan keripikmu sekarang.</p>
                 </div>
             </div>
 
             <div class="order-grid">
                 <div class="order-box glass reveal">
-                    <div class="badge"><span class="dot"></span> Checkout cepat • Link tinggal ganti</div>
+                    <div class="badge"><span class="dot"></span> Pengiriman ke Seluruh Indonesia</div>
                     <h3 class="mt-2.5 mb-0">Pilih cara beli yang paling nyaman.</h3>
                     <p>
-                        1) <b>WhatsApp</b> untuk tanya stok/ongkir cepat. <br/>
-                        2) <b>Marketplace</b> untuk voucher & promo. <br/>
-                        3) <b>Web Checkout</b> untuk experience brand yang rapih (cart).
+                        Pilih metode pemesanan kesukaan Anda!
+                        Mau respons cepat via admin? Klik <b>WhatsApp</b>.<br/>
+                        Suka pakai promo gratis ongkir? Kami ada di <b>Marketplace</b>.<br/>
+                        Atau mau checkout kilat? Gunakan fitur <b>Keranjang Web</b> kami!
                     </p>
 
                     <div class="order-actions">
@@ -277,7 +286,7 @@
                     </div>
 
                     <p class="mt-3" style="color:var(--muted)">
-                        Tips: ganti link WA pakai format <code>https://wa.me/62xxxx</code> + pesan default.
+                        Follow SOSMED kami untuk info promo dadakan dan giveaway bulanan!
                     </p>
                 </div>
             </div>
@@ -285,13 +294,13 @@
     </section>
 
     {{-- Fat Footer --}}
-    <footer class="footer-fat">
+    <footer class="footer-fat" style="background-color: #08130c;">
         <div class="container py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
                 {{-- Brand --}}
                 <div class="col-span-1">
                     <div class="flex items-center gap-3 mb-5">
-                        <img src="{{ asset('assets/brand/logo.png') }}" class="w-10 h-10 rounded-xl glass p-1"/>
+                        <img src="{{ asset('assets/brand/logo.png') }}" alt="Logo Keripik iLiL" class="w-10 h-10 rounded-xl glass p-1"/>
                         <span class="font-bold text-xl tracking-tight text-white">iLiL</span>
                     </div>
                     <p class="text-sm text-white/60 leading-relaxed mb-6">

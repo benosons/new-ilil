@@ -590,6 +590,7 @@ async function initThreeScene() {
         const geo = new THREE.BoxGeometry(width, height, depth, 40, 60, 20);
 
         const pos = geo.attributes.position;
+        const uv = geo.attributes.uv;
         const v = new THREE.Vector3();
         const halfH = height * 0.5;
         const halfW = width * 0.5;
@@ -600,20 +601,28 @@ async function initThreeScene() {
             const ny = v.y / halfH;   // -1..1
             const nx = v.x / halfW;   // -1..1
 
-            // Bulge (filled pouch)
+            // Ketebalan mengecil ke atas (tapering untuk seal atas)
+            const thicknessFactor = 1.0 - Math.max(0, (ny + 0.2) * 0.4); 
+
+            // Bulge (buncit di tengah, bawah lebih tebal sedikit)
             const curve = (1 - Math.min(1, Math.abs(nx))) ** 1.6;
             const signZ = Math.sign(v.z) || 1;
-            v.z += signZ * 0.12 * curve * (0.55 + 0.45 * (1 - Math.abs(ny)));
+            
+            // Terapkan ketebalan dasar + curve * taper
+            v.z = (v.z * thicknessFactor) + signZ * 0.12 * curve * (0.6 + 0.4 * (1 - Math.abs(ny))) * thicknessFactor;
 
-            // Side pinch
-            v.x *= 1 - 0.08 * (1 - Math.abs(ny));
+            // Side pinch (Lebih melengkung masuk di sisi atas)
+            const pinchFactor = 1 - 0.08 * (1 - Math.abs(ny));
+            v.x *= pinchFactor;
 
-            // Top seal flatten
-            if (ny > 0.8) v.z *= 0.9;
+            // Top seal flatten (ujung atas sangat tipis)
+            if (ny > 0.8) {
+                v.z *= 0.1;
+            }
 
-            // Bottom gusset feel
+            // Bottom gusset feel (berdiri stabil tegak di bawah)
             if (ny < -0.8) {
-                v.z *= 0.85;
+                v.z *= 0.9;
                 v.x *= 1.05;
                 v.y += 0.02 * (-(ny + 0.8) / 0.2);
             }
@@ -621,57 +630,76 @@ async function initThreeScene() {
             pos.setXYZ(i, v.x, v.y, v.z);
         }
 
+        // Adjust UV mapping for the FRONT face (material index 4)
+        // Groups in BoxGeometry: 0:Right, 1:Left, 2:Top, 3:Bottom, 4:Front, 5:Back
+        // The Front face group is at index 4.
+        const frontGroup = geo.groups[4];
+        if (frontGroup) {
+            for (let i = frontGroup.start; i < frontGroup.start + frontGroup.count; i++) {
+                // Get original UV
+                let u = uv.getX(i);
+                let v = uv.getY(i);
+                // BoxGeometry front UVs are mapped [0,1]. We can stretch or adjust it if needed.
+                // For now, we will use the full texture [0,1]
+                uv.setXY(i, u, v);
+            }
+            uv.needsUpdate = true;
+        }
+        
+        // Adjust UV mapping for the BACK face (material index 5)
+        // Group index 5 is the back face of the BoxGeometry
+        const backGroup = geo.groups[5];
+        if (backGroup) {
+            for (let i = backGroup.start; i < backGroup.start + backGroup.count; i++) {
+                // Get original UV
+                let u = uv.getX(i);
+                let v = uv.getY(i);
+                // Flip UV horizontally for the back so the image is not mirrored
+                uv.setXY(i, 1 - u, v);
+            }
+            uv.needsUpdate = true;
+        }
+
         geo.computeVertexNormals();
         return geo;
     }
 
-    // === Curved Label ===
-    function createLabel(texture) {
-        const w = 0.95, h = 1.2;
-        const geo = new THREE.PlaneGeometry(w, h, 40, 40);
+    // === Material untuk Pouch ===
+    // Kita gunakan array material: 
+    // [right, left, top, bottom, front, back] di BoxGeometry
+    let pouch = null;
+    let pouchMaterials = [];
 
-        const pos = geo.attributes.position;
-        const v = new THREE.Vector3();
-        const halfW = w * 0.5;
-
-        for (let i = 0; i < pos.count; i++) {
-            v.fromBufferAttribute(pos, i);
-            const nx = v.x / halfW;
-            v.z = -0.10 * nx * nx; // hug the pouch curvature
-            pos.setXYZ(i, v.x, v.y, v.z);
-        }
-        geo.computeVertexNormals();
-
-        const mat = new THREE.MeshStandardMaterial({
-            map: texture,
-            transparent: true,
-            roughness: 0.65,
-            metalness: 0
-        });
-
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(0, -0.05, 0.28);
-        return mesh;
-    }
-
-    // === Create Pouch ===
-    const pouch = new THREE.Mesh(
-        createPouchGeometry(),
-        new THREE.MeshStandardMaterial({ color: 0xf7f7f7, roughness: 0.9, metalness: 0 })
-    );
-    pouch.castShadow = true;
-    pouch.receiveShadow = true;
-    group.add(pouch);
-
-    // === Load Label Texture (pack-hero.png) ===
-    let label = null;
     const loader = new THREE.TextureLoader();
     loader.load(ASSETS.heroPack, (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        label = createLabel(tex);
-        group.add(label);
+        
+        // Material polos untuk pinggiran (kiri, kanan, atas, bawah)
+        const blankMat = new THREE.MeshStandardMaterial({ 
+            color: 0xf7f7f7, roughness: 0.9, metalness: 0.1 
+        });
+
+        // Material tekstur untuk bagian DEPAN & BELAKANG
+        const packMat = new THREE.MeshStandardMaterial({ 
+            map: tex, roughness: 0.65, metalness: 0 
+        });
+
+        // Index BoxGeometry: 0:right, 1:left, 2:top, 3:bottom, 4:front, 5:back
+        pouchMaterials = [
+            blankMat, blankMat, blankMat, blankMat, 
+            packMat, // Front
+            packMat  // Back
+        ];
+
+        // === Create Pouch ===
+        pouch = new THREE.Mesh(createPouchGeometry(), pouchMaterials);
+        pouch.castShadow = true;
+        pouch.receiveShadow = true;
+        group.add(pouch);
     });
+
+    // Label digabungkan langsung ke pouch, tidak pakai kurva terpisah lagi.
 
     // === Shadow plane ===
     const shadowPlane = new THREE.Mesh(
@@ -684,25 +712,41 @@ async function initThreeScene() {
     group.add(shadowPlane);
 
     // === Chip Particles ===
-    const chipCount = 30;
-    const chipGeo = new THREE.PlaneGeometry(0.24, 0.24);
+    const chipCount = 15; 
+    const chipGeo = new THREE.PlaneGeometry(0.35, 0.35);
     const chips3D = [];
+    
+    // Load chip textures
+    const chipTexs = [
+        loader.load('/assets/chips/chip1.png'),
+        loader.load('/assets/chips/chip2.png'),
+        loader.load('/assets/chips/chip3.png')
+    ];
+    chipTexs.forEach(t => t.colorSpace = THREE.SRGBColorSpace);
 
     for (let i = 0; i < chipCount; i++) {
+        const tex = chipTexs[i % chipTexs.length];
         const mat = new THREE.MeshStandardMaterial({
-            color: new THREE.Color().setHSL(0.11 + Math.random() * 0.06, 0.75, 0.5 + Math.random() * 0.2),
-            roughness: 0.7, metalness: 0.04,
-            transparent: true, opacity: 0.15 + Math.random() * 0.22,
+            map: tex,
+            transparent: true,
+            roughness: 0.7, 
+            metalness: 0.1,
             side: THREE.DoubleSide
         });
         const m = new THREE.Mesh(chipGeo, mat);
         const angle = (i / chipCount) * Math.PI * 2;
-        const radius = 2.0 + (i % 5) * 0.12;
-        m.position.set(Math.cos(angle) * radius, (i % 8) * 0.18 - 0.6, Math.sin(angle) * radius);
+        const radius = 1.8 + (i % 3) * 0.3;
+        m.position.set(Math.cos(angle) * radius, (i % 5) * 0.3 - 0.6, Math.sin(angle) * radius);
         m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
         m.castShadow = true;
         group.add(m);
-        chips3D.push(m);
+        chips3D.push({
+            mesh: m,
+            speedX: 0.2 + Math.random() * 0.2,
+            speedY: 0.2 + Math.random() * 0.2,
+            speedZ: 0.2 + Math.random() * 0.2,
+            floatOffset: Math.random() * Math.PI * 2
+        });
     }
 
     // === Resize ===
@@ -725,16 +769,12 @@ async function initThreeScene() {
 
         const s = clamp((window.scrollY || 0) / (document.body.scrollHeight - innerHeight + 1), 0, 1);
 
-        // Pouch gentle wobble
-        pouch.rotation.y = Math.sin(now * 0.0005) * 0.22 + s * 0.1;
-        pouch.rotation.x = Math.sin(now * 0.00038) * 0.04;
-        pouch.position.y = Math.sin(now * 0.0007) * 0.035;
-
-        // Label follows pouch rotation
-        if (label) {
-            label.rotation.y = pouch.rotation.y;
-            label.rotation.x = pouch.rotation.x;
-            label.position.y = -0.05 + pouch.position.y;
+        // Pouch gentle wobble & rotation
+        if (pouch) {
+            // Percepat rotasi pouch secara signifikan (dari 0.0005 -> 0.002)
+            pouch.rotation.y = Math.sin(now * 0.002) * 0.35 + s * 0.15;
+            pouch.rotation.x = Math.sin(now * 0.00038) * 0.04;
+            pouch.position.y = Math.sin(now * 0.0007) * 0.035;
         }
 
         // Slow group rotation
@@ -746,10 +786,12 @@ async function initThreeScene() {
 
         // Chip particles
         for (let i = 0; i < chips3D.length; i++) {
-            const m = chips3D[i];
-            m.rotation.x += dt * (0.25 + i * 0.004);
-            m.rotation.y += dt * (0.2 + i * 0.005);
-            m.position.y += Math.sin(now * 0.0007 + i) * 0.0006;
+            const data = chips3D[i];
+            const m = data.mesh;
+            m.rotation.x += dt * data.speedX;
+            m.rotation.y += dt * data.speedY;
+            m.rotation.z += dt * data.speedZ;
+            m.position.y += Math.sin(now * 0.001 + data.floatOffset) * 0.002;
         }
 
         // Camera cinematic
