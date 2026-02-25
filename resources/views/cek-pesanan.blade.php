@@ -43,7 +43,7 @@
                 <div class="order-box glass reveal">
                     <div class="section-title reveal" style="justify-content: center; text-align: center; margin-bottom: 30px;">
                         <div>
-                            <h2>Cek Pesanan</h2>
+                            <h2><i class="bi bi-cart-check-fill"></i> Cek Pesanan</h2>
                             <p>Masukkan Nomor WhatsApp Anda untuk melihat status pesanan terakhir.</p>
                         </div>
                     </div>
@@ -56,7 +56,7 @@
                                 <input type="tel" id="wa_number" name="wa_number" 
                                     style="flex:1; padding:12px 16px; background:rgba(255,255,255,.05); border:1px solid var(--stroke); border-radius:12px; color:#fff; outline:none; transition:all .2s;"
                                     placeholder="Cth: 081234567890" value="{{ old('wa_number', $waNumber ?? '') }}" required>
-                                <button type="submit" class="btn primary" style="padding:12px 24px; font-size:1rem; border-radius:12px;">Cari</button>
+                                <button type="submit" class="btn primary" style="padding:12px 24px; font-size:1rem; border-radius:12px;"><i class="bi bi-search-heart"></i> Cari</button>
                             </div>
                         </div>
                     </form>
@@ -120,8 +120,8 @@
                     @endif
 
                     <div style="margin-top: 24px;">
-                        <a href="{{ route('order-page.index') }}" class="btn" style="width:100%; padding:14px; font-size:.95rem; border-radius:12px; display:block; text-align:center; background-color:rgba(255,255,255,0.1); color:#fff; text-decoration: none; border: 1px solid var(--stroke); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-                            ← Kembali ke Form Pemesanan
+                        <a href="{{ route('order-page.index') }}" class="btn" style="width:100%; padding:14px; font-size:.95rem; border-radius:12px; display:flex; justify-content:center; align-items:center; gap:8px; background-color:rgba(255,255,255,0.1); color:#fff; text-decoration: none; border: 1px solid var(--stroke); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                            <i class="bi bi-arrow-left"></i> Kembali ke Form Pemesanan
                         </a>
                     </div>
                 </div>

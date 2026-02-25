@@ -47,7 +47,7 @@
                 <div class="order-box glass reveal">
                     <div class="section-title reveal" style="justify-content: center; text-align: center; margin-bottom: 20px;">
                         <div>
-                            <h2>Pesan Langsung</h2>
+                            <h2><i class="bi bi-bag-heart-fill"></i> Pesan Langsung</h2>
                             <p>Isi form di bawah ini untuk memesan langsung.</p>
                         </div>
                     </div>
@@ -103,12 +103,12 @@
                         </div>
 
                         <div class="form-group" style="margin-bottom: 24px;">
-                            <label for="voucher_code" style="display:block; font-size:.85rem; font-weight:600; color:rgba(255,255,255,.8); margin-bottom:8px;">Kode Voucher (Opsional)</label>
+                            <label for="voucher_code" style="display:block; font-size:.85rem; font-weight:600; color:rgba(255,255,255,.8); margin-bottom:8px;">Kode Voucher</label>
                             <div style="display:flex; gap:12px;">
                                 <input type="text" id="voucher_code" name="voucher_code" 
                                     style="flex-grow:1; padding:12px 16px; background:rgba(255,255,255,.05); border:1px solid var(--stroke); border-radius:12px; color:#fff; outline:none; transition:all .2s; text-transform:uppercase;"
                                     placeholder="Masukkan kode voucher" value="{{ old('voucher_code') }}">
-                                <button type="button" id="applyVoucherBtn" class="btn primary" style="padding:0 24px; border-radius:12px;">Terapkan</button>
+                                <button type="button" id="applyVoucherBtn" class="btn primary" style="padding:0 24px; border-radius:12px;"><i class="bi bi-bookmark-star-fill" style="font-size:1.5rem;"></i></button>
                             </div>
                             <small id="voucherMessage" style="display:none; margin-top:8px;"></small>
                         </div>
@@ -127,10 +127,12 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn primary" style="width:100%; padding:16px; font-size:1rem; border-radius:14px; margin-bottom:12px;">Kirim Pesanan</button>
+                        <button type="submit" class="btn primary" style="width:100%; padding:16px; font-size:1rem; border-radius:14px; margin-bottom:12px; display:flex; justify-content:center; align-items:center; gap:8px;">
+                            <i class="bi bi-send-check" style="font-size:1.1rem;"></i> Kirim Pesanan
+                        </button>
                         
-                        <a href="{{ route('cek-pesanan.index') }}" class="btn" style="width:100%; padding:16px; font-size:1rem; border-radius:14px; display:block; text-align:center; background-color: var(--accent); color: #000; font-weight: 600; text-decoration: none; border: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-                            Cek Pesanan Saya
+                        <a href="{{ route('cek-pesanan.index') }}" class="btn" style="width:100%; padding:16px; font-size:1rem; border-radius:14px; display:flex; justify-content:center; align-items:center; gap:8px; background-color: var(--accent); color: #000; font-weight: 600; text-decoration: none; border: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                            <i class="bi bi-cart-check" style="font-size:1.1rem;"></i> Cek Pesanan Saya
                         </a>
                     </form>
                 </div>
