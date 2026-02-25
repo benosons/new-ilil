@@ -112,6 +112,15 @@ class OrderController extends Controller
             $updateRel['shipped_at'] = now();
         }
 
+        if ($data['status'] === 'cancelled' && $order->status !== 'cancelled') {
+            // Restore stock
+            foreach ($order->items as $item) {
+                if ($item->product) {
+                    $item->product->increment('stock', $item->quantity);
+                }
+            }
+        }
+
         $order->update($updateRel);
 
         return back()->with('success', "Status pesanan #{$order->order_number} diperbarui ke {$data['status']}.");

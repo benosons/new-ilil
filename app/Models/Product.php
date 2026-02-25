@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Product extends Model
 {
     protected $fillable = [
-        'key', 'name', 'description', 'price', 'image_path',
+        'key', 'name', 'description', 'price', 'stock', 'image_path',
         'glow_color', 'is_active', 'sort_order',
     ];
 
     protected $casts = [
         'price' => 'integer',
+        'stock' => 'integer',
         'is_active' => 'boolean',
         'sort_order' => 'integer',
     ];
@@ -28,6 +29,11 @@ class Product extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopeInStock($query)
+    {
+        return $query->where('stock', '>', 0);
     }
 
     public function scopeSorted($query)

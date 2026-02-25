@@ -2,7 +2,7 @@
 @section('page_title', 'Detail Pesanan #' . $order->order_number)
 
 @section('content')
-    <div style="display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start">
+    <div class="layout-grid">
         {{-- Order Items --}}
         <div class="card">
             <div class="card-header">

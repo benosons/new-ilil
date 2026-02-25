@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px; margin-bottom:24px;">
+    <div class="grid-2-1">
         <div class="card">
             <h3 style="margin-bottom:16px; font-size:1rem">Tren Pendapatan (30 Hari)</h3>
             <canvas id="revenueChart" height="120"></canvas>

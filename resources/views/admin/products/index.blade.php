@@ -17,6 +17,7 @@
                         <th>Nama</th>
                         <th>Key</th>
                         <th>Harga</th>
+                        <th>Stok</th>
                         <th>Status</th>
                         <th>Urutan</th>
                         <th>Aksi</th>
@@ -37,6 +38,13 @@
                             <td><strong>{{ $product->name }}</strong></td>
                             <td class="text-muted">{{ $product->key }}</td>
                             <td>{{ $product->formatted_price }}</td>
+                            <td>
+                                @if($product->stock > 0)
+                                    <span style="color:var(--accent); font-weight:600;">{{ $product->stock }}</span>
+                                @else
+                                    <span style="color:var(--danger); font-weight:600;">Habis (0)</span>
+                                @endif
+                            </td>
                             <td>
                                 @if ($product->is_active)
                                     <span class="badge-status paid">Aktif</span>

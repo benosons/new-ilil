@@ -92,6 +92,11 @@ class CheckoutController extends Controller
 
                 foreach ($request->items as $item) {
                     $product = Product::findOrFail($item['product_id']);
+                    
+                    if ($product->stock < $item['quantity']) {
+                        throw new \Exception("Stok produk {$product->name} tidak mencukupi. Sisa stok saat ini: {$product->stock} pcs.");
+                    }
+
                     $itemSubtotal = $product->price * $item['quantity'];
                     $subtotal += $itemSubtotal;
 
@@ -102,6 +107,9 @@ class CheckoutController extends Controller
                         'price' => $product->price,
                         'subtotal' => $itemSubtotal,
                     ];
+
+                    // Deduct stock
+                    $product->decrement('stock', $item['quantity']);
                 }
 
                 // Apply Voucher
@@ -250,7 +258,15 @@ class CheckoutController extends Controller
             } elseif ($transactionStatus === 'pending') {
                 $order->update(['status' => 'pending']);
             } elseif (in_array($transactionStatus, ['deny', 'expire', 'cancel'])) {
-                $order->update(['status' => 'cancelled']);
+                if ($order->status !== 'cancelled') {
+                    // Restore stock
+                    foreach ($order->items as $item) {
+                        if ($item->product) {
+                            $item->product->increment('stock', $item->quantity);
+                        }
+                    }
+                    $order->update(['status' => 'cancelled']);
+                }
             }
 
             return response()->json(['message' => 'OK']);

@@ -70,168 +70,154 @@ if (nav) {
 ========================== */
 const bg = $("#bg");
 
-const seed = 1337;
-function rand(i) {
-    let x = (seed + i * 99991) >>> 0;
-    x = (x * 1664525 + 1013904223) >>> 0;
-    return x / 2 ** 32;
-}
+if (bg) {
+    const isMobileApp = window.innerWidth < 768;
+    const seed = 1337;
+    function rand(i) {
+        let x = (seed + i * 99991) >>> 0;
+        x = (x * 1664525 + 1013904223) >>> 0;
+        return x / 2 ** 32;
+    }
 
-// Generate clusters of 3-4 chips
-const CLUSTER_COUNT = 14;
-const chipVariants = ["chip-1", "chip-2", "chip-3"];
-const allChips = [];
+    // Generate clusters of 3-4 chips
+    const CLUSTER_COUNT = isMobileApp ? 3 : 14;
+    const chipVariants = ["chip-1", "chip-2", "chip-3"];
+    const allChips = [];
 
-for (let c = 0; c < CLUSTER_COUNT; c++) {
-    const chipsPerCluster = 3 + Math.floor(rand(c * 77) * 2); // 3 atau 4
-    const clusterX = ((c * 1.618033988749 * 37.7) % 105) - 2;
-    const clusterY = ((c * 1.618033988749 * 23.3 + rand(c * 5) * 25) % 120) - 10;
-    const clusterDepth = 0.05 + rand(c * 13) * 0.28; // depth per cluster
+    for (let c = 0; c < CLUSTER_COUNT; c++) {
+        const chipsPerCluster = 3 + Math.floor(rand(c * 77) * 2); 
+        const clusterX = ((c * 1.618033988749 * 37.7) % 105) - 2;
+        const clusterY = ((c * 1.618033988749 * 23.3 + rand(c * 5) * 25) % 120) - 10;
+        const clusterDepth = 0.05 + rand(c * 13) * 0.28; 
 
-    for (let j = 0; j < chipsPerCluster; j++) {
+        for (let j = 0; j < chipsPerCluster; j++) {
+            const div = document.createElement("div");
+            const variant = chipVariants[(c * 3 + j) % 3];
+            div.className = `chip ${variant}`;
+
+            const offsetX = (rand(c * 100 + j * 7) - 0.5) * 8;
+            const offsetY = (rand(c * 100 + j * 11) - 0.5) * 6;
+            const chipX = clusterX + offsetX;
+            const chipY = clusterY + offsetY;
+
+            const depth = clusterDepth + (rand(c * 50 + j * 3) - 0.5) * 0.06;
+            const scale = (0.35 + depth * 2.0 + rand(c * 30 + j * 9) * 0.5) * (isMobileApp ? 0.7 : 1);
+            const rot = rand(c * 20 + j * 17) * 360;
+            const phase = rand(c * 40 + j * 23) * Math.PI * 2;
+            const speed = 0.6 + rand(c * 60 + j * 31) * 0.8; 
+
+            div.style.left = chipX + "vw";
+            div.style.top = chipY + "vh";
+            div.style.transform = `translate3d(0,0,0) rotate(${rot}deg) scale(${scale})`;
+
+            // Disable blur on mobile entirely for performance
+            if (isMobileApp && depth > 0.15) {
+                div.style.filter = "none";
+                div.style.opacity = "0.7";
+            }
+
+            bg.appendChild(div);
+
+            allChips.push({
+                el: div, x: chipX, y: chipY, depth, baseRot: rot, baseScale: scale, phase, speed
+            });
+        }
+    }
+
+    // Generate solo scattered chips
+    const SOLO_COUNT = isMobileApp ? 5 : 18;
+    for (let s = 0; s < SOLO_COUNT; s++) {
         const div = document.createElement("div");
-        const variant = chipVariants[(c * 3 + j) % 3];
+        const variant = chipVariants[s % 3];
         div.className = `chip ${variant}`;
 
-        // Posisi relatif ke cluster center — tersebar 3-8vw dari pusat
-        const offsetX = (rand(c * 100 + j * 7) - 0.5) * 8;
-        const offsetY = (rand(c * 100 + j * 11) - 0.5) * 6;
-        const chipX = clusterX + offsetX;
-        const chipY = clusterY + offsetY;
+        const soloX = ((s * 1.618033988749 * 53.1 + 17) % 108) - 4;
+        const soloY = ((s * 1.618033988749 * 31.7 + 41) % 140) - 20;
+        const depth = 0.04 + rand(s * 200 + 1) * 0.30;
+        const sizeVariety = [0.15, 0.2, 0.25, 0.35, 0.5, 0.65, 0.8, 1.0, 1.2, 1.4];
+        const scale = (sizeVariety[s % sizeVariety.length] + rand(s * 201) * 0.15) * (isMobileApp ? 0.7 : 1);
 
-        // Depth sedikit berbeda per chip dalam cluster
-        const depth = clusterDepth + (rand(c * 50 + j * 3) - 0.5) * 0.06;
+        const rot = rand(s * 202) * 360;
+        const phase = rand(s * 203) * Math.PI * 2;
+        const speed = 0.5 + rand(s * 204) * 1.0;
 
-        // Skala berdasarkan depth + variasi
-        const scale = 0.35 + depth * 2.0 + rand(c * 30 + j * 9) * 0.5;
-
-        // Rotasi acak
-        const rot = rand(c * 20 + j * 17) * 360;
-
-        // Fase unik untuk floating
-        const phase = rand(c * 40 + j * 23) * Math.PI * 2;
-        const speed = 0.6 + rand(c * 60 + j * 31) * 0.8; // kecepatan float berbeda
-
-        div.style.left = chipX + "vw";
-        div.style.top = chipY + "vh";
+        div.style.left = soloX + "vw";
+        div.style.top = soloY + "vh";
         div.style.transform = `translate3d(0,0,0) rotate(${rot}deg) scale(${scale})`;
+
+        if (isMobileApp) {
+            div.style.filter = "none";
+            div.style.opacity = "0.6";
+        }
 
         bg.appendChild(div);
 
         allChips.push({
-            el: div,
-            x: chipX,
-            y: chipY,
-            depth,
-            baseRot: rot,
-            baseScale: scale,
-            phase,
-            speed
+            el: div, x: soloX, y: soloY, depth, baseRot: rot, baseScale: scale, phase, speed
         });
     }
-}
 
-// Generate solo scattered chips — berbeda ukuran, tersebar sendiri-sendiri
-const SOLO_COUNT = 18;
-for (let s = 0; s < SOLO_COUNT; s++) {
-    const div = document.createElement("div");
-    const variant = chipVariants[s % 3];
-    div.className = `chip ${variant}`;
+    let mouseX = 0.5; 
+    let mouseY = 0.5;
+    let targetMouseX = 0.5;
+    let targetMouseY = 0.5;
 
-    // Posisi tersebar luas — pakai offset berbeda dari clusters
-    const soloX = ((s * 1.618033988749 * 53.1 + 17) % 108) - 4;
-    const soloY = ((s * 1.618033988749 * 31.7 + 41) % 140) - 20;
-
-    // Depth bervariasi
-    const depth = 0.04 + rand(s * 200 + 1) * 0.30;
-
-    // Ukuran sangat bervariasi: dari sangat kecil (0.15) sampai besar (1.4)
-    const sizeVariety = [0.15, 0.2, 0.25, 0.35, 0.5, 0.65, 0.8, 1.0, 1.2, 1.4];
-    const scale = sizeVariety[s % sizeVariety.length] + rand(s * 201) * 0.15;
-
-    const rot = rand(s * 202) * 360;
-    const phase = rand(s * 203) * Math.PI * 2;
-    const speed = 0.5 + rand(s * 204) * 1.0;
-
-    div.style.left = soloX + "vw";
-    div.style.top = soloY + "vh";
-    div.style.transform = `translate3d(0,0,0) rotate(${rot}deg) scale(${scale})`;
-
-    bg.appendChild(div);
-
-    allChips.push({
-        el: div,
-        x: soloX,
-        y: soloY,
-        depth,
-        baseRot: rot,
-        baseScale: scale,
-        phase,
-        speed
-    });
-}
-
-// Mouse tracking untuk parallax cursor
-let mouseX = 0.5; // normalized 0-1
-let mouseY = 0.5;
-let targetMouseX = 0.5;
-let targetMouseY = 0.5;
-
-window.addEventListener("mousemove", (e) => {
-    targetMouseX = e.clientX / window.innerWidth;
-    targetMouseY = e.clientY / window.innerHeight;
-}, { passive: true });
-
-let scrollY = 0;
-let targetScroll = 0;
-
-function updateParallax() {
-    scrollY += (targetScroll - scrollY) * 0.08;
-    // Smooth mouse lerp
-    mouseX += (targetMouseX - mouseX) * 0.04;
-    mouseY += (targetMouseY - mouseY) * 0.04;
-
-    const t = scrollY;
-    const now = performance.now();
-
-    // Mouse offset dari center (-0.5 to +0.5)
-    const mx = (mouseX - 0.5);
-    const my = (mouseY - 0.5);
-
-    for (let i = 0; i < allChips.length; i++) {
-        const c = allChips[i];
-        const { el, depth, baseRot, baseScale, phase, speed } = c;
-
-        // Scroll parallax
-        const scrollX = Math.sin((t * 0.0012) + i * 0.7) * (14 * depth);
-        const scrollYOffset = t * depth * 0.22;
-
-        // Idle floating — continuous bobbing
-        const floatX = Math.sin(now * 0.0003 * speed + phase) * (8 + depth * 18);
-        const floatY = Math.cos(now * 0.00025 * speed + phase * 1.3) * (6 + depth * 14);
-
-        // Mouse cursor parallax — depth chip besar = reaksi lebih besar
-        const mouseParX = mx * depth * -80;
-        const mouseParY = my * depth * -60;
-
-        // Rotasi: base + scroll + idle wobble
-        const rot = baseRot + (t * 0.008 * depth) + Math.sin(now * 0.00015 * speed + phase) * 5;
-
-        // Scale pulse halus saat idle
-        const scalePulse = baseScale + Math.sin(now * 0.0004 * speed + phase * 0.7) * 0.03;
-
-        const totalX = scrollX + floatX + mouseParX;
-        const totalY = scrollYOffset + floatY + mouseParY;
-
-        el.style.transform = `translate3d(${totalX}px, ${totalY}px, 0) rotate(${rot}deg) scale(${scalePulse})`;
+    // Only track mouse heavily on desktop to save battery/performace
+    if (!isMobileApp) {
+        window.addEventListener("mousemove", (e) => {
+            targetMouseX = e.clientX / window.innerWidth;
+            targetMouseY = e.clientY / window.innerHeight;
+        }, { passive: true });
     }
 
-    bg.style.transform = `translate3d(0, ${-(t * 0.04)}px, 0)`;
+    let scrollY = 0;
+    let targetScroll = 0;
+    let lastRenderTime = 0;
+
+    function updateParallax(now) {
+        requestAnimationFrame(updateParallax);
+
+        // Limit frame rate on mobile to save battery and reduce jitter (approx 30fps)
+        if (isMobileApp && now - lastRenderTime < 30) return;
+        lastRenderTime = now;
+
+        scrollY += (targetScroll - scrollY) * 0.1;
+        mouseX += (targetMouseX - mouseX) * 0.04;
+        mouseY += (targetMouseY - mouseY) * 0.04;
+
+        const t = scrollY;
+        const mx = (mouseX - 0.5);
+        const my = (mouseY - 0.5);
+
+        for (let i = 0; i < allChips.length; i++) {
+            const c = allChips[i];
+            const { el, depth, baseRot, baseScale, phase, speed } = c;
+
+            const scrollX = Math.sin((t * 0.0012) + i * 0.7) * (14 * depth);
+            const scrollYOffset = t * depth * 0.22;
+
+            const floatX = Math.sin(now * 0.0003 * speed + phase) * (8 + depth * 18);
+            const floatY = Math.cos(now * 0.00025 * speed + phase * 1.3) * (6 + depth * 14);
+
+            const mouseParX = isMobileApp ? 0 : mx * depth * -80;
+            const mouseParY = isMobileApp ? 0 : my * depth * -60;
+
+            const rot = baseRot + (t * 0.008 * depth) + Math.sin(now * 0.00015 * speed + phase) * 5;
+            const scalePulse = isMobileApp ? baseScale : baseScale + Math.sin(now * 0.0004 * speed + phase * 0.7) * 0.03;
+
+            const totalX = scrollX + floatX + mouseParX;
+            const totalY = scrollYOffset + floatY + mouseParY;
+
+            el.style.transform = `translate3d(${totalX}px, ${totalY}px, 0) rotate(${rot}deg) scale(${scalePulse})`;
+        }
+
+        // Limit bg transform translation frequency or simplify it
+        bg.style.transform = `translate3d(0, ${-(t * 0.04)}px, 0)`;
+    }
+
+    window.addEventListener("scroll", () => { targetScroll = window.scrollY || 0; }, { passive: true });
     requestAnimationFrame(updateParallax);
 }
-
-window.addEventListener("scroll", () => { targetScroll = window.scrollY || 0; }, { passive: true });
-updateParallax();
 
 /* ==========================
    Product data-driven render
@@ -259,7 +245,7 @@ function renderProducts() {
             <p>${p.desc}</p>
             <div class="price-row">
                 <span class="price">${rupiah(p.price)}</span>
-                <button class="btn mini primary add" type="button" data-name="${p.name}" data-price="${p.price}" data-id="${p.id}" data-img="${p.img}">Tambah</button>
+                <button class="btn mini primary add" type="button" data-name="${p.name}" data-price="${p.price}" data-id="${p.id}" data-img="${p.img}" data-stock="${p.stock !== undefined ? p.stock : 100}">Tambah</button>
             </div>
         </div>
     `).join("");
@@ -364,11 +350,38 @@ function saveCartToStorage() {
     localStorage.setItem('ilil_cart', JSON.stringify(data));
 }
 
-function addItem(name, price, productId, img) {
-    const cur = cart.get(name) || { price, qty: 0, product_id: productId, img: img || '' };
+const swalDarkConfig = typeof window.swalDarkConfig !== 'undefined' ? window.swalDarkConfig : {
+    color: '#fff',
+    backdrop: 'rgba(0,0,0,0.6)',
+    allowOutsideClick: false,
+    customClass: {
+        popup: 'glass',
+        confirmButton: 'btn primary'
+    },
+    confirmButtonColor: 'var(--accent)'
+};
+
+function addItem(name, price, productId, img, stock) {
+    const cur = cart.get(name) || { price, qty: 0, product_id: productId, img: img || '', stock: stock };
     cur.price = price;
     cur.product_id = productId;
     if (img) cur.img = img;
+    if (stock !== undefined) cur.stock = stock;
+    
+    if (cur.stock !== undefined && cur.qty + 1 > cur.stock) {
+        if (window.Swal) {
+            Swal.fire({
+                ...swalDarkConfig,
+                icon: 'warning',
+                title: 'Stok Terbatas',
+                text: 'Stok untuk produk ini hanya tersisa ' + cur.stock + ' pcs.',
+            });
+        } else {
+            alert('Stok untuk produk ini hanya tersisa ' + cur.stock + ' pcs.');
+        }
+        return;
+    }
+
     cur.qty += 1;
     cart.set(name, cur);
     renderCart();
@@ -378,7 +391,24 @@ function addItem(name, price, productId, img) {
 function updateQty(name, delta) {
     const it = cart.get(name);
     if (!it) return;
-    it.qty = Math.max(1, it.qty + delta);
+    
+    let newQty = Math.max(1, it.qty + delta);
+    
+    if (it.stock !== undefined && newQty > it.stock) {
+        newQty = it.stock;
+        if (window.Swal) {
+            Swal.fire({
+                ...swalDarkConfig,
+                icon: 'warning',
+                title: 'Stok Terbatas',
+                text: 'Stok untuk produk ini hanya tersisa ' + it.stock + ' pcs.',
+            });
+        } else {
+            alert('Stok untuk produk ini hanya tersisa ' + it.stock + ' pcs.');
+        }
+    }
+
+    it.qty = newQty;
     cart.set(name, it);
     renderCart();
     saveCartToStorage();
@@ -400,7 +430,8 @@ modal.addEventListener("click", (e) => { if (e.target === modal) closeCart(); })
 document.addEventListener("click", (e) => {
     const btn = e.target.closest(".add");
     if (!btn) return;
-    addItem(btn.dataset.name, parseInt(btn.dataset.price, 10), parseInt(btn.dataset.id, 10), btn.dataset.img || '');
+    const stock = btn.dataset.stock ? parseInt(btn.dataset.stock, 10) : undefined;
+    addItem(btn.dataset.name, parseInt(btn.dataset.price, 10), parseInt(btn.dataset.id, 10), btn.dataset.img || '', stock);
 });
 
 // Restore cart from localStorage on page load

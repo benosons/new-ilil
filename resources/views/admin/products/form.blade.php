@@ -44,6 +44,11 @@
                            value="{{ old('price', $product->price) }}" min="0" required>
                 </div>
                 <div class="form-group">
+                    <label for="stock">Stok Awal/Sekarang</label>
+                    <input type="number" id="stock" name="stock" class="form-control"
+                           value="{{ old('stock', $product->stock ?? 0) }}" min="0" required>
+                </div>
+                <div class="form-group">
                     <label for="sort_order">Urutan</label>
                     <input type="number" id="sort_order" name="sort_order" class="form-control"
                            value="{{ old('sort_order', $product->sort_order ?? 0) }}" min="0">

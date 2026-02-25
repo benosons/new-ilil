@@ -11,7 +11,7 @@ class LandingPageController extends Controller
      */
     public function index()
     {
-        $products = Product::active()->sorted()->get();
+        $products = Product::active()->inStock()->sorted()->get();
 
         // Pass products as JSON for JS rendering
         $productsJson = $products->map(fn($p) => [
@@ -20,6 +20,7 @@ class LandingPageController extends Controller
             'name' => $p->name,
             'desc' => $p->description,
             'price' => $p->price,
+            'stock' => $p->stock,
             'img' => asset($p->image_path),
             'glow' => $p->glow_color,
         ]);

@@ -138,11 +138,37 @@
         .logout-btn { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; font-family: inherit; }
         .logout-btn:hover { color: var(--danger); }
 
+        /* Layout Grid for Show Pages & Dashboard */
+        .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .layout-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+
+        /* Hamburger */
+        .hamburger { display: none; background: transparent; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; padding: 0; margin-right: 12px; }
+
         /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main { margin-left: 0; }
+        @media (max-width: 1024px) {
+            .grid-2-1 { grid-template-columns: 1fr; }
+            .layout-grid { grid-template-columns: 1fr; }
         }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; width: 100vw; }
+            .hamburger { display: block; }
+            .topbar { padding: 0 16px; }
+            .topbar h2 { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .topbar-user { display: none; }
+            .content { padding: 16px; }
+            .card-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .card-header .btn { width: 100%; justify-content: center; }
+        }
+
+        /* Overlay */
+        .sidebar-overlay { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background: rgba(0,0,0,0.5); z-index: 40; display: none; backdrop-filter: blur(2px);
+        }
+        .sidebar-overlay.open { display: block; }
     </style>
 </head>
 <body>
@@ -190,10 +216,16 @@
             </div>
         </aside>
 
+        <!-- Mobile Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
         <!-- Main -->
         <div class="main">
             <div class="topbar">
-                <h2>@yield('page_title', 'Dashboard')</h2>
+                <div style="display: flex; align-items: center;">
+                    <button class="hamburger" id="hamburgerBtn" type="button" aria-label="Toggle Menu">☰</button>
+                    <h2>@yield('page_title', 'Dashboard')</h2>
+                </div>
                 <div class="topbar-right">
                     <span class="topbar-user">{{ auth()->user()->name }}</span>
                     <form method="POST" action="{{ route('logout') }}" class="logout-form">
@@ -215,6 +247,24 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            function toggleMenu() {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('open');
+            }
+
+            if (hamburgerBtn && sidebar && overlay) {
+                hamburgerBtn.addEventListener('click', toggleMenu);
+                overlay.addEventListener('click', toggleMenu);
+            }
+        });
+    </script>
     @stack('scripts')
 </body>
 </html>

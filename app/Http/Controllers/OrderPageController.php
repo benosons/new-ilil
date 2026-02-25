@@ -11,7 +11,7 @@ class OrderPageController extends Controller
     public function index()
     {
         // Get all active products for the dropdown
-        $products = Product::active()->sorted()->get();
+        $products = Product::active()->inStock()->sorted()->get();
         return view('order-page', compact('products'));
     }
 
@@ -55,6 +55,17 @@ class OrderPageController extends Controller
             return redirect()->back()->withInput()->withErrors(['products' => 'Silakan pilih minimal 1 produk pesanan.']);
         }
 
+        // Validate against actual stock
+        foreach ($selectedProducts as $productId => $quantity) {
+            $product = \App\Models\Product::find($productId);
+            if (!$product) {
+                return redirect()->back()->withInput()->withErrors(['products' => 'Produk tidak ditemukan.']);
+            }
+            if ($product->stock < $quantity) {
+                return redirect()->back()->withInput()->withErrors(['products' => "Mohon maaf, stok produk {$product->name} tidak mencukupi. Sisa stok saat ini: {$product->stock} pcs."]);
+            }
+        }
+
         // Check for existing pending order
         $order = StandaloneOrder::where('wa_number', $validated['wa_number'])
                                 ->where('status', 'pending')
@@ -84,6 +95,8 @@ class OrderPageController extends Controller
         foreach ($selectedProducts as $productId => $quantity) {
             $product = \App\Models\Product::find($productId);
             if ($product) {
+                // Deduct stock for the ordered quantity
+                $product->decrement('stock', $quantity);
                 // Check if item already exists in the order
                 $existingItem = $order->items()->where('product_id', $productId)->first();
                 

@@ -90,7 +90,7 @@
                                     </div>
                                     <div style="display:flex; align-items:center; gap:8px;">
                                         <button type="button" style="width:32px; height:32px; border-radius:8px; background:rgba(255,255,255,.1); border:1px solid var(--stroke); color:#fff; cursor:pointer; font-weight:bold;" onclick="updateQty({{ $product->id }}, -1)">−</button>
-                                        <input type="number" id="qty_{{ $product->id }}" name="products[{{ $product->id }}]" min="0" max="100" value="{{ old('products.'.$product->id, 0) }}" data-price="{{ $product->price }}"
+                                        <input type="number" id="qty_{{ $product->id }}" name="products[{{ $product->id }}]" min="0" max="{{ $product->stock ?? 100 }}" value="{{ old('products.'.$product->id, 0) }}" data-price="{{ $product->price }}"
                                             style="width:40px; height:32px; text-align:center; background:transparent; border:none; color:#fff; font-weight:bold; outline:none; -moz-appearance:textfield; appearance:textfield;" class="qty-input" readonly>
                                         <button type="button" style="width:32px; height:32px; border-radius:8px; background:rgba(255,255,255,.1); border:1px solid var(--stroke); color:#fff; cursor:pointer; font-weight:bold;" onclick="updateQty({{ $product->id }}, 1)">+</button>
                                     </div>
@@ -191,9 +191,21 @@
         function updateQty(id, change) {
             const input = document.getElementById('qty_' + id);
             let currentQty = parseInt(input.value) || 0;
+            const maxQty = parseInt(input.getAttribute('max')) || 100;
+
             currentQty += change;
             if (currentQty < 0) currentQty = 0;
-            if (currentQty > 100) currentQty = 100;
+            
+            if (currentQty > maxQty) {
+                currentQty = maxQty;
+                Swal.fire({
+                    ...swalDarkConfig,
+                    icon: 'warning',
+                    title: 'Stok Habis',
+                    text: 'Stok produk ini hanya tersisa ' + maxQty + ' pcs.',
+                });
+            }
+
             input.value = currentQty;
             calculateTotal();
         }
@@ -240,29 +252,6 @@
         });
     </script>
     
-    {{-- Parallax Background script from landing page --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const bg = document.getElementById('bg');
-            if (bg) {
-                const isMobile = window.innerWidth < 768;
-                const count = isMobile ? 8 : 18;
-                for(let i=0; i<count; i++){
-                    const chip = document.createElement('div');
-                    chip.className = `chip chip-${Math.floor(Math.random()*3)+1}`;
-                    chip.style.left = `${Math.random()*100}vw`;
-                    chip.style.top = `${Math.random()*200}vh`; // spread further down
-                    chip.style.transform = `scale(${isMobile ? 0.3 + Math.random()*0.3 : 0.4 + Math.random()*0.4}) rotate(${Math.random()*360}deg)`;
-                    chip.style.filter = `blur(${Math.random()*4}px) opacity(${0.5 + Math.random()*0.4})`;
-                    bg.appendChild(chip);
-                }
-
-                window.addEventListener('scroll', () => {
-                    const scrolled = window.scrollY;
-                    bg.style.transform = `translateY(${scrolled * 0.4}px)`;
-                }, {passive:true});
-            }
-        });
-    </script>
+    {{-- Parallax Background script is globally handled by app.js --}}
     @endpush
 @endsection

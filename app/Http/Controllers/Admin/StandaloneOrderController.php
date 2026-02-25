@@ -42,6 +42,15 @@ class StandaloneOrderController extends Controller
             'status' => 'required|in:pending,processed,completed,cancelled',
         ]);
 
+        if ($validated['status'] === 'cancelled' && $standaloneOrder->status !== 'cancelled') {
+            // Restore stock
+            foreach ($standaloneOrder->items as $item) {
+                if ($item->product) {
+                    $item->product->increment('stock', $item->quantity);
+                }
+            }
+        }
+
         $standaloneOrder->update(['status' => $validated['status']]);
 
         return redirect()->back()->with('success', 'Status pesanan berhasil diperbarui.');
