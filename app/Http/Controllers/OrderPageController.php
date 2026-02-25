@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\StandaloneOrder;
+use App\Models\Voucher;
 use Illuminate\Http\Request;
 
 class OrderPageController extends Controller
@@ -36,6 +37,42 @@ class OrderPageController extends Controller
 
         return response()->json(['exists' => false]);
     }
+    public function checkVoucher(Request $request)
+    {
+        $voucherCode = $request->input('voucher_code');
+        $subtotal = $request->input('subtotal', 0);
+
+        if (!$voucherCode) {
+            return response()->json(['valid' => false, 'message' => 'Kode voucher tidak valid.']);
+        }
+
+        $voucher = Voucher::where('code', $voucherCode)->where('is_active', true)->first();
+
+        if (!$voucher) {
+            return response()->json(['valid' => false, 'message' => 'Voucher tidak ditemukan atau tidak aktif.']);
+        }
+
+        if (!$voucher->isValid()) {
+            return response()->json(['valid' => false, 'message' => 'Voucher sudah kadaluarsa atau kuota telah habis.']);
+        }
+
+        $discountAmount = 0;
+        if ($voucher->type === 'percent') {
+            $discountAmount = $subtotal * ($voucher->value / 100);
+        } else {
+            $discountAmount = $voucher->value;
+        }
+
+        // Prevent discount from being larger than subtotal
+        $discountAmount = min($discountAmount, $subtotal);
+
+        return response()->json([
+            'valid' => true,
+            'code' => $voucher->code,
+            'discount' => $discountAmount,
+            'message' => 'Voucher berhasil digunakan.'
+        ]);
+    }
 
     public function store(Request $request)
     {
@@ -45,6 +82,7 @@ class OrderPageController extends Controller
             'email' => 'nullable|email|max:100',
             'products' => 'required|array',
             'products.*' => 'nullable|integer|min:0',
+            'voucher_code' => 'nullable|string'
         ]);
 
         $selectedProducts = array_filter($validated['products'] ?? [], function($qty) {
@@ -90,7 +128,7 @@ class OrderPageController extends Controller
             $order->save();
         }
 
-        $totalPrice = $order->total_price;
+        $totalPrice = $isMerge ? $order->items->sum('subtotal') : 0; // Calculate base raw total from existing items if merged
         
         foreach ($selectedProducts as $productId => $quantity) {
             $product = \App\Models\Product::find($productId);
@@ -126,8 +164,40 @@ class OrderPageController extends Controller
                 }
             }
         }
+        $order->update(['total_price' => $totalPrice]); // Update raw total_price first
 
-        $order->update(['total_price' => $totalPrice]);
+        // Voucher Validation
+        $voucherCode = $validated['voucher_code'] ?? null;
+        $discountAmount = 0;
+
+        if ($voucherCode) {
+            $voucher = Voucher::where('code', $voucherCode)->where('is_active', true)->first();
+            if ($voucher && $voucher->isValid()) {
+                if ($voucher->type === 'percent') {
+                    $discountAmount = $totalPrice * ($voucher->value / 100);
+                } else {
+                    $discountAmount = $voucher->value;
+                }
+                
+                // Prevent discount from being larger than subtotal
+                $discountAmount = min($discountAmount, $totalPrice);
+                
+                // If it's a new voucher application
+                if ($order->voucher_code !== $voucher->code) {
+                    $voucher->increment('used_count');
+                }
+                
+                $order->voucher_code = $voucher->code;
+                $order->discount_amount = $discountAmount;
+            } else {
+                return redirect()->back()->withInput()->withErrors(['voucher_code' => 'Voucher tidak valid atau kuota telah habis.']);
+            }
+        }
+
+        // Apply discount to total_price
+        $finalTotal = max(0, $totalPrice - $discountAmount);
+        $order->total_price = $finalTotal;
+        $order->save();
 
         if ($isMerge) {
             return redirect()->route('order-page.index')->with('success', 'Pesanan tambahan Anda berhasil digabungkan dengan pesanan sebelumnya! Tim kami akan segera menghubungi Anda via WhatsApp.');

@@ -44,8 +44,18 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="3" style="text-align:right"><strong style="color:var(--accent)">Total Pembayaran</strong></td>
-                            <td><strong style="color:var(--accent); font-size:1.05rem">{{ $standaloneOrder->formatted_total }}</strong></td>
+                            <td colspan="3" style="text-align:right"><span style="color:var(--muted)">Subtotal</span></td>
+                            <td><span style="color:var(--muted)">Rp {{ number_format($standaloneOrder->total_price + $standaloneOrder->discount_amount, 0, ',', '.') }}</span></td>
+                        </tr>
+                        @if($standaloneOrder->voucher_code)
+                        <tr>
+                            <td colspan="3" style="text-align:right"><span style="color:var(--accent)">Diskon ({{ $standaloneOrder->voucher_code }})</span></td>
+                            <td><span style="color:var(--accent)">-Rp {{ number_format($standaloneOrder->discount_amount, 0, ',', '.') }}</span></td>
+                        </tr>
+                        @endif
+                        <tr>
+                            <td colspan="3" style="text-align:right"><strong style="color:#fff">Total Pembayaran</strong></td>
+                            <td><strong style="color:var(--accent); font-size:1.05rem">Rp {{ number_format($standaloneOrder->total_price, 0, ',', '.') }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>

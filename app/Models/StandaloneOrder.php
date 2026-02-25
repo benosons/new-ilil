@@ -11,8 +11,10 @@ class StandaloneOrder extends Model
         'name',
         'wa_number',
         'email',
-        'total_price',
+        'total_amount',
         'status',
+        'voucher_code',
+        'discount_amount'
     ];
 
     protected $casts = [

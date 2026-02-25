@@ -23,6 +23,7 @@ use App\Http\Controllers\OrderPageController;
 use App\Http\Controllers\CheckOrderController;
 Route::get('/pesan-langsung', [OrderPageController::class, 'index'])->name('order-page.index');
 Route::post('/pesan-langsung', [OrderPageController::class, 'store'])->name('order-page.store');
+Route::post('/api/check-voucher', [OrderPageController::class, 'checkVoucher'])->name('api.check-voucher');
 Route::get('/api/check-wa', [OrderPageController::class, 'checkWa'])->name('api.check-wa');
 Route::get('/cek-pesanan', [CheckOrderController::class, 'index'])->name('cek-pesanan.index');
 Route::post('/cek-pesanan', [CheckOrderController::class, 'search'])->name('cek-pesanan.search');

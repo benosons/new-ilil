@@ -102,9 +102,29 @@
                             @enderror
                         </div>
 
-                        <div style="padding-top:20px; border-top:1px solid var(--stroke); margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:.9rem; color:var(--muted);">Total Pesanan:</span>
-                            <strong id="displayTotal" style="font-size:1.4rem; color:var(--accent);">Rp 0</strong>
+                        <div class="form-group" style="margin-bottom: 24px;">
+                            <label for="voucher_code" style="display:block; font-size:.85rem; font-weight:600; color:rgba(255,255,255,.8); margin-bottom:8px;">Kode Voucher (Opsional)</label>
+                            <div style="display:flex; gap:12px;">
+                                <input type="text" id="voucher_code" name="voucher_code" 
+                                    style="flex-grow:1; padding:12px 16px; background:rgba(255,255,255,.05); border:1px solid var(--stroke); border-radius:12px; color:#fff; outline:none; transition:all .2s; text-transform:uppercase;"
+                                    placeholder="Masukkan kode voucher" value="{{ old('voucher_code') }}">
+                                <button type="button" id="applyVoucherBtn" class="btn primary" style="padding:0 24px; border-radius:12px;">Terapkan</button>
+                            </div>
+                            <small id="voucherMessage" style="display:none; margin-top:8px;"></small>
+                        </div>
+
+                        <div style="padding-top:20px; border-top:1px solid var(--stroke); margin-bottom:24px; display:flex; flex-direction:column; gap:8px;">
+                            <div id="discountRow" style="display:none; justify-content:space-between; align-items:center;">
+                                <span style="font-size:.9rem; color:var(--accent);">Diskon Voucher:</span>
+                                <strong id="displayDiscount" style="font-size:1.1rem; color:var(--accent);">-Rp 0</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                                <span style="font-size:1.1rem; font-weight:600; color:var(--muted);">Total Pesanan:</span>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span id="displayOriginalTotal" style="font-size:1.1rem; color:var(--muted); text-decoration:line-through; display:none;">Rp 0</span>
+                                    <strong id="displayTotal" style="font-size:1.6rem; color:var(--accent);">Rp 0</strong>
+                                </div>
+                            </div>
                         </div>
 
                         <button type="submit" class="btn primary" style="width:100%; padding:16px; font-size:1rem; border-radius:14px; margin-bottom:12px;">Kirim Pesanan</button>
@@ -175,17 +195,43 @@
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
         };
 
+        const displayOriginalTotal = document.getElementById('displayOriginalTotal');
+        const displayDiscount = document.getElementById('displayDiscount');
         const displayTotal = document.getElementById('displayTotal');
+        const discountRow = document.getElementById('discountRow');
         const qtyInputs = document.querySelectorAll('.qty-input');
+        
+        let currentSubtotal = 0;
+        let currentDiscount = 0;
 
         function calculateTotal() {
-            let total = 0;
+            currentSubtotal = 0;
             qtyInputs.forEach(input => {
                 const price = parseFloat(input.getAttribute('data-price')) || 0;
                 const qty = parseInt(input.value) || 0;
-                total += price * qty;
+                currentSubtotal += price * qty;
             });
-            displayTotal.textContent = formatRupiah(total);
+            
+            // Re-validate voucher if amount drops below min_purchase? Simplest is to just cap discount.
+            let activeDiscount = currentSubtotal > 0 ? currentDiscount : 0;
+            // Prevent negative total
+            if (activeDiscount > currentSubtotal) activeDiscount = currentSubtotal;
+
+            const finalTotal = currentSubtotal - activeDiscount;
+
+            displayTotal.textContent = formatRupiah(finalTotal);
+            
+            if (activeDiscount > 0) {
+                displayOriginalTotal.textContent = formatRupiah(currentSubtotal);
+                displayOriginalTotal.style.display = 'inline';
+                displayDiscount.textContent = '-' + formatRupiah(activeDiscount);
+                discountRow.style.display = 'flex';
+                displayTotal.style.color = '#fff'; // Highlight new total
+            } else {
+                displayOriginalTotal.style.display = 'none';
+                discountRow.style.display = 'none';
+                displayTotal.style.color = 'var(--accent)';
+            }
         }
 
         function updateQty(id, change) {
@@ -249,6 +295,70 @@
             } else {
                 mergeNotification.style.display = 'none';
             }
+        });
+
+        // Voucher logic
+        const applyVoucherBtn = document.getElementById('applyVoucherBtn');
+        const voucherInput = document.getElementById('voucher_code');
+        const voucherMessage = document.getElementById('voucherMessage');
+
+        applyVoucherBtn.addEventListener('click', function() {
+            const code = voucherInput.value.trim().toUpperCase();
+            if(!code) return;
+
+            // Optional: require at least 1 item to be selected before applying voucher
+            if(currentSubtotal <= 0) {
+                voucherMessage.style.display = 'block';
+                voucherMessage.style.color = 'var(--danger)';
+                voucherMessage.textContent = 'Silakan pilih produk terlebih dahulu.';
+                return;
+            }
+
+            // Disable button during req
+            applyVoucherBtn.disabled = true;
+            applyVoucherBtn.textContent = '...';
+            applyVoucherBtn.style.opacity = '0.7';
+
+            fetch('{{ route('api.check-voucher') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    voucher_code: code,
+                    subtotal: currentSubtotal
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Voucher Check Response:', data);
+                voucherMessage.style.display = 'block';
+                if(data.valid) {
+                    voucherMessage.style.color = 'var(--accent)';
+                    voucherMessage.textContent = data.message;
+                    currentDiscount = parseFloat(data.discount) || 0;
+                    calculateTotal();
+                } else {
+                    voucherMessage.style.color = 'var(--danger)';
+                    voucherMessage.textContent = data.message;
+                    currentDiscount = 0;
+                    calculateTotal();
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                voucherMessage.style.display = 'block';
+                voucherMessage.style.color = 'var(--danger)';
+                voucherMessage.textContent = 'Terjadi kesalahan sistem saat mengecek voucher.';
+                currentDiscount = 0;
+                calculateTotal();
+            })
+            .finally(() => {
+                applyVoucherBtn.disabled = false;
+                applyVoucherBtn.textContent = 'Terapkan';
+                applyVoucherBtn.style.opacity = '1';
+            });
         });
     </script>
     

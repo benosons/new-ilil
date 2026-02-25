@@ -36,17 +36,21 @@
 
         {{-- Table Section --}}
         <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Pelanggan</th>
-                        <th>Produk</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th>No / Tanggal</th>
+                            <th>Pelanggan</th>
+                            <th>No. WhatsApp</th>
+                            <th>Total Item</th>
+                            <th>Subtotal</th>
+                            <th>Voucher</th>
+                            <th>Diskon</th>
+                            <th>Total Akhir</th>
+                            <th>Status</th>
+                            <th class="text-right">Aksi</th>
+                        </tr>
+                    </thead>
                 <tbody>
                     @forelse($orders as $order)
                         <tr>
@@ -55,11 +59,27 @@
                                 <div><strong>{{ $order->name }}</strong></div>
                                 <div class="text-muted" style="font-size: .8rem;">{{ $order->wa_number }}</div>
                             </td>
+                            <td>{{ $order->wa_number }}</td>
                             <td>
-                                <div>{{ Str::words($order->items->pluck('product.name')->join(', ')?:'-', 5) }}</div>
-                                <div class="text-muted" style="font-size: .8rem;">{{ $order->items->sum('quantity') }} items</div>
+                                <div>{{ $order->items->sum('quantity') }}</div>
                             </td>
-                            <td><strong>{{ $order->formatted_total }}</strong></td>
+                            <td>
+                                {{-- Subtotal = Final Total + Discount --}}
+                                <div style="font-weight: 500;">Rp {{ number_format($order->total_price + $order->discount_amount, 0, ',', '.') }}</div>
+                            </td>
+                            <td>
+                                @if($order->voucher_code)
+                                    <span class="badge" style="background:rgba(57,217,138,0.1); color:var(--accent);">{{ $order->voucher_code }}</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td>
+                                <div style="font-weight: 500;">Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color:var(--accent);">Rp {{ number_format($order->total_price, 0, ',', '.') }}</div>
+                            </td>
                             <td>{!! $order->status_badge !!}</td>
                             <td>
                                 <a href="{{ route('admin.standalone-orders.show', $order) }}" class="btn btn-ghost btn-sm">Detail</a>

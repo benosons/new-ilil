@@ -27,14 +27,14 @@ class ProductController extends Controller
             'description' => 'nullable|string|max:500',
             'price' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
             'glow_color' => 'nullable|string|max:50',
             'is_active' => 'boolean',
             'sort_order' => 'integer|min:0',
         ];
 
         $messages = [
-            'image.max' => 'Ukuran gambar maksimal adalah 2MB.',
+            'image.max' => 'Ukuran gambar maksimal adalah 4MB.',
             'image.uploaded' => 'Gagal mengupload gambar. Kemungkinan ukuran gambar lebih besar dari batas maksimal server (PHP upload_max_filesize). Cobalah kompres gambar Anda.'
         ];
 
@@ -64,14 +64,14 @@ class ProductController extends Controller
             'description' => 'nullable|string|max:500',
             'price' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
             'glow_color' => 'nullable|string|max:50',
             'is_active' => 'boolean',
             'sort_order' => 'integer|min:0',
         ];
 
         $messages = [
-            'image.max' => 'Ukuran gambar maksimal adalah 2MB.',
+            'image.max' => 'Ukuran gambar maksimal adalah 4MB.',
             'image.uploaded' => 'Gagal mengupload gambar. Kemungkinan ukuran gambar lebih besar dari batas maksimal server (PHP upload_max_filesize). Cobalah kompres gambar Anda.'
         ];
 
