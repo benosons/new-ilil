@@ -21,7 +21,7 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $rules = [
             'key' => 'required|string|max:50|unique:products,key',
             'name' => 'required|string|max:100',
             'description' => 'nullable|string|max:500',
@@ -31,7 +31,14 @@ class ProductController extends Controller
             'glow_color' => 'nullable|string|max:50',
             'is_active' => 'boolean',
             'sort_order' => 'integer|min:0',
-        ]);
+        ];
+
+        $messages = [
+            'image.max' => 'Ukuran gambar maksimal adalah 2MB.',
+            'image.uploaded' => 'Gagal mengupload gambar. Kemungkinan ukuran gambar lebih besar dari batas maksimal server (PHP upload_max_filesize). Cobalah kompres gambar Anda.'
+        ];
+
+        $data = $request->validate($rules, $messages);
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
@@ -51,7 +58,7 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        $data = $request->validate([
+        $rules = [
             'key' => 'required|string|max:50|unique:products,key,' . $product->id,
             'name' => 'required|string|max:100',
             'description' => 'nullable|string|max:500',
@@ -61,7 +68,14 @@ class ProductController extends Controller
             'glow_color' => 'nullable|string|max:50',
             'is_active' => 'boolean',
             'sort_order' => 'integer|min:0',
-        ]);
+        ];
+
+        $messages = [
+            'image.max' => 'Ukuran gambar maksimal adalah 2MB.',
+            'image.uploaded' => 'Gagal mengupload gambar. Kemungkinan ukuran gambar lebih besar dari batas maksimal server (PHP upload_max_filesize). Cobalah kompres gambar Anda.'
+        ];
+
+        $data = $request->validate($rules, $messages);
 
         if ($request->hasFile('image')) {
             // Delete old image if exists and is in storage (not assets)
