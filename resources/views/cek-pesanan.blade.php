@@ -97,10 +97,25 @@
                                 @endforeach
                             </div>
 
-                            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,.1); padding-top:16px;">
-                                <span style="color:var(--muted); font-weight:600;">Total Tagihan:</span>
-                                <strong style="font-size:1.3rem; color:var(--accent);">{{ $order->formatted_total }}</strong>
-                            </div>
+                            @if($order->voucher_code)
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,.1); padding-top:16px; margin-bottom:8px;">
+                                    <span style="color:var(--muted); font-weight:600;">Subtotal:</span>
+                                    <span style="color:#fff;">Rp {{ number_format($order->total_price + $order->discount_amount, 0, ',', '.') }}</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                    <span style="color:var(--accent); font-weight:600;">Diskon Voucher ({{ $order->voucher_code }}):</span>
+                                    <span style="color:var(--accent);">-Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,.1); padding-top:12px;">
+                                    <span style="color:var(--muted); font-weight:600;">Total Tagihan:</span>
+                                    <strong style="font-size:1.3rem; color:var(--accent);">Rp {{ number_format($order->total_price, 0, ',', '.') }}</strong>
+                                </div>
+                            @else
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,.1); padding-top:16px;">
+                                    <span style="color:var(--muted); font-weight:600;">Total Tagihan:</span>
+                                    <strong style="font-size:1.3rem; color:var(--accent);">Rp {{ number_format($order->total_price, 0, ',', '.') }}</strong>
+                                </div>
+                            @endif
                         </div>
                     @endif
 
@@ -152,26 +167,42 @@
         @endif
     </script>
     
-    {{-- Parallax Background script from landing page --}}
+    {{-- Parallax Background script from landing page (Optimized for Mobile) --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const bg = document.getElementById('bg');
             if (bg) {
                 const isMobile = window.innerWidth < 768;
-                const count = isMobile ? 8 : 18;
+                const count = isMobile ? 5 : 18; // Reduced count for mobile
+                
                 for(let i=0; i<count; i++){
                     const chip = document.createElement('div');
                     chip.className = `chip chip-${Math.floor(Math.random()*3)+1}`;
                     chip.style.left = `${Math.random()*100}vw`;
                     chip.style.top = `${Math.random()*200}vh`; // spread further down
-                    chip.style.transform = `scale(${isMobile ? 0.3 + Math.random()*0.3 : 0.4 + Math.random()*0.4}) rotate(${Math.random()*360}deg)`;
-                    chip.style.filter = `blur(${Math.random()*4}px) opacity(${0.5 + Math.random()*0.4})`;
+                    
+                    const scale = isMobile ? (0.3 + Math.random()*0.2) : (0.4 + Math.random()*0.4);
+                    chip.style.transform = `scale(${scale}) rotate(${Math.random()*360}deg)`;
+                    
+                    // Filters (blur) are notoriously slow on mobile GPUs. Only apply to desktop.
+                    if (isMobile) {
+                        chip.style.opacity = `${0.4 + Math.random()*0.3}`;
+                    } else {
+                        chip.style.filter = `blur(${Math.random()*4}px) opacity(${0.5 + Math.random()*0.4})`;
+                    }
                     bg.appendChild(chip);
                 }
 
+                let ticking = false;
                 window.addEventListener('scroll', () => {
                     const scrolled = window.scrollY;
-                    bg.style.transform = `translateY(${scrolled * 0.4}px)`;
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            bg.style.transform = `translateY(${scrolled * 0.4}px)`;
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
                 }, {passive:true});
             }
         });
