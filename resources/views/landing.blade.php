@@ -74,7 +74,7 @@
                     </p>
 
                     <div class="hero-cta">
-                        <a class="btn whatsapp" id="ctaWa" href="#" title="Pesan via WhatsApp">💬 Pesan WhatsApp</a>
+                        <a class="btn whatsapp" id="ctaWa" href="{{ route('order-page.index') }}" title="Pesan via WhatsApp">💬 Pesan WhatsApp</a>
                         <a class="btn market" id="ctaMk" href="#" title="Checkout Marketplace">🛍️ Marketplace</a>
                         <button class="btn primary" id="ctaWeb" type="button" title="Checkout via Web">🧾 Checkout Web</button>
                         <a class="btn ghost" href="#produk" title="Lihat varian rasa">🍌 Pilih Rasa</a>
@@ -253,7 +253,7 @@
                     </p>
 
                     <div class="order-actions">
-                        <a class="btn whatsapp" id="orderWa" href="#">💬 Pesan via WhatsApp</a>
+                        <a class="btn whatsapp" id="orderWa" href="{{ route('order-page.index') }}">💬 Pesan via WhatsApp</a>
                         <a class="btn market" id="orderMk" href="#">🛍️ Checkout Marketplace</a>
                         <button class="btn primary" id="orderWeb" type="button">🧾 Checkout di Web</button>
                     </div>
@@ -399,7 +399,7 @@
                     </div>
 
                     <div class="flex gap-2.5 flex-wrap mt-3">
-                        <a class="btn whatsapp" id="checkoutWa" href="#">💬 Checkout WA</a>
+                        <a class="btn whatsapp" id="checkoutWa" href="{{ route('order-page.index') }}">💬 Checkout WA</a>
                         <a class="btn market" id="checkoutMk" href="#">🛍️ Marketplace</a>
                         <button class="btn primary" id="checkoutWeb" type="button">💳 Bayar Online</button>
                     </div>

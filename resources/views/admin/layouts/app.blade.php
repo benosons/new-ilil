@@ -170,7 +170,10 @@
                     <span class="icon">📦</span> Produk
                 </a>
                 <a href="{{ route('admin.orders.index') }}" class="nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
-                    <span class="icon">🧾</span> Pesanan
+                    <span class="icon">🧾</span> Pesanan Keranjang
+                </a>
+                <a href="{{ route('admin.standalone-orders.index') }}" class="nav-item {{ request()->routeIs('admin.standalone-orders.*') ? 'active' : '' }}">
+                    <span class="icon">💬</span> Pesanan Langsung
                 </a>
                 <a href="{{ route('admin.vouchers.index') }}" class="nav-item {{ request()->routeIs('admin.vouchers.*') ? 'active' : '' }}">
                     <span class="icon">🎟️</span> Voucher
