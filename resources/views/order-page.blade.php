@@ -98,7 +98,7 @@
                                 @endforeach
                             </div>
                             @error('products')
-                                <small style="color:var(--danger); display:block; margin-top:8px;">Pilih minimal 1 produk pesanan.</small>
+                                <small style="color:var(--danger); display:block; margin-top:8px;">{{ $message }}</small>
                             @enderror
                         </div>
 
