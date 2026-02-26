@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StandaloneOrder extends Model
 {
+    use \App\Traits\LoggableTransaction;
+
     protected $fillable = [
         'name',
         'wa_number',

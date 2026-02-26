@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
+    use \App\Traits\LoggableTransaction;
+    
     protected $fillable = [
         'order_number', 'customer_name', 'customer_phone', 'customer_email',
         'customer_address', 'subtotal', 'shipping_cost', 'discount_amount', 'total', 'status',

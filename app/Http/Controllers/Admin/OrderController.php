@@ -119,6 +119,13 @@ class OrderController extends Controller
                     $item->product->increment('stock', $item->quantity);
                 }
             }
+            // Restore voucher quota if used
+            if ($order->voucher_code) {
+                $voucher = \App\Models\Voucher::where('code', $order->voucher_code)->first();
+                if ($voucher && $voucher->used_count > 0) {
+                    $voucher->decrement('used_count');
+                }
+            }
         }
 
         $order->update($updateRel);
