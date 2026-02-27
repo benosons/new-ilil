@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('vouchers', 'max_discount')) {
-            Schema::table('vouchers', function (Blueprint $table) {
-                $table->decimal('max_discount', 12, 2)->nullable()->after('value');
+        if (!Schema::hasColumn('standalone_orders', 'catatan')) {
+            Schema::table('standalone_orders', function (Blueprint $table) {
+                $table->text('catatan')->nullable()->after('email');
             });
         }
     }
@@ -23,8 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('vouchers', function (Blueprint $table) {
-            $table->dropColumn('max_discount');
+        Schema::table('standalone_orders', function (Blueprint $table) {
+            $table->dropColumn('catatan');
         });
     }
 };
