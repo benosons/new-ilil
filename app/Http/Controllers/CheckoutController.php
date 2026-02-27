@@ -58,6 +58,9 @@ class CheckoutController extends Controller
             $discount = $voucher->value;
         } else {
             $discount = $subtotal * ($voucher->value / 100);
+            if ($voucher->max_discount) {
+                $discount = min($discount, (float)$voucher->max_discount);
+            }
         }
 
         if ($discount > $subtotal) $discount = $subtotal;
@@ -124,6 +127,9 @@ class CheckoutController extends Controller
                             $discountAmount = $voucher->value;
                         } else {
                             $discountAmount = $subtotal * ($voucher->value / 100);
+                            if ($voucher->max_discount) {
+                                $discountAmount = min($discountAmount, (float)$voucher->max_discount);
+                            }
                         }
                         if ($discountAmount > $subtotal) $discountAmount = $subtotal;
                         

@@ -40,6 +40,12 @@
                     <input type="number" id="value" name="value" class="form-control"
                            value="{{ old('value', $voucher->value) }}" min="0" step="0.01" required>
                 </div>
+                <div class="form-group" id="max_discount_group" style="display: {{ old('type', $voucher->type) == 'percent' ? 'block' : 'none' }};">
+                    <label for="max_discount">Maksimal Potongan</label>
+                    <input type="number" id="max_discount" name="max_discount" class="form-control"
+                           value="{{ old('max_discount', $voucher->max_discount) }}" min="0" step="0.01" placeholder="Cth: 20000">
+                    <small class="text-muted">Opsional. Berlaku jika persentase.</small>
+                </div>
             </div>
 
             <div class="form-row">
@@ -72,4 +78,22 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var typeSelect = document.getElementById('type');
+            var maxDiscountGroup = document.getElementById('max_discount_group');
+            
+            function toggleMaxDiscount() {
+                if(typeSelect.value === 'percent') {
+                    maxDiscountGroup.style.display = 'block';
+                } else {
+                    maxDiscountGroup.style.display = 'none';
+                    document.getElementById('max_discount').value = '';
+                }
+            }
+            
+            typeSelect.addEventListener('change', toggleMaxDiscount);
+        });
+    </script>
 @endsection

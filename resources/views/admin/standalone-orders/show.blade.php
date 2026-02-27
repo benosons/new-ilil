@@ -76,6 +76,14 @@
                     @if ($standaloneOrder->email)
                         <div class="text-muted">✉️ {{ $standaloneOrder->email }}</div>
                     @endif
+                    @if ($standaloneOrder->catatan)
+                        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
+                            <span style="display:block; font-size:0.8rem; color:var(--muted); margin-bottom:4px;">Catatan:</span>
+                            <div style="background:var(--bg-lighter); padding:8px; border-radius:6px; font-style:italic;">
+                                {{ $standaloneOrder->catatan }}
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
 

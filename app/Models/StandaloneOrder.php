@@ -16,7 +16,8 @@ class StandaloneOrder extends Model
         'total_amount',
         'status',
         'voucher_code',
-        'discount_amount'
+        'discount_amount',
+        'catatan'
     ];
 
     protected $casts = [

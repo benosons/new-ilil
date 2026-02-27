@@ -102,6 +102,13 @@
                             @enderror
                         </div>
 
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label for="catatan" style="display:block; font-size:.85rem; font-weight:600; color:rgba(255,255,255,.8); margin-bottom:8px;">Catatan (Opsional)</label>
+                            <textarea type="text" id="catatan" name="catatan" 
+                                style="width:100%; padding:12px 16px; background:rgba(255,255,255,.05); border:1px solid var(--stroke); border-radius:12px; color:#fff; outline:none; transition:all .2s;"
+                                placeholder="catatan">{{ old('catatan') }}</textarea>
+                        </div>
+
                         <div class="form-group" style="margin-bottom: 24px;">
                             <label for="voucher_code" style="display:block; font-size:.85rem; font-weight:600; color:rgba(255,255,255,.8); margin-bottom:8px;">Kode Voucher</label>
                             <div style="display:flex; gap:12px;">

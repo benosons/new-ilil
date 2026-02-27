@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Voucher extends Model
 {
     protected $fillable = [
-        'code', 'type', 'value', 'max_uses', 'used_count', 'expires_at', 'is_active'
+        'code', 'type', 'value', 'max_discount', 'max_uses', 'used_count', 'expires_at', 'is_active'
     ];
 
     protected $casts = [

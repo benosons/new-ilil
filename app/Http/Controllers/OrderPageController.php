@@ -59,6 +59,9 @@ class OrderPageController extends Controller
         $discountAmount = 0;
         if ($voucher->type === 'percent') {
             $discountAmount = $subtotal * ($voucher->value / 100);
+            if ($voucher->max_discount) {
+                $discountAmount = min($discountAmount, (float)$voucher->max_discount);
+            }
         } else {
             $discountAmount = $voucher->value;
         }
@@ -82,6 +85,8 @@ class OrderPageController extends Controller
             'email' => 'nullable|email|max:100',
             'products' => 'required|array',
             'products.*' => 'nullable|integer|min:0',
+            'products.*' => 'nullable|integer|min:0',
+            'catatan' => 'nullable|string|max:500',
             'voucher_code' => 'nullable|string'
         ]);
 
@@ -118,6 +123,7 @@ class OrderPageController extends Controller
                 $order->update([
                     'name' => $validated['name'],
                     'email' => $validated['email'] ?? $order->email,
+                    'catatan' => $validated['catatan'] ?? $order->catatan,
                 ]);
                 $isMerge = true;
             } else {
@@ -126,6 +132,7 @@ class OrderPageController extends Controller
                 $order->name = $validated['name'];
                 $order->wa_number = $validated['wa_number'];
                 $order->email = $validated['email'];
+                $order->catatan = $validated['catatan'];
                 $order->total_price = 0;
                 $order->status = 'pending';
                 $order->save();
@@ -184,6 +191,9 @@ class OrderPageController extends Controller
 
                 if ($voucher->type === 'percent') {
                     $discountAmount = $totalPrice * ($voucher->value / 100);
+                    if ($voucher->max_discount) {
+                        $discountAmount = min($discountAmount, (float)$voucher->max_discount);
+                    }
                 } else {
                     $discountAmount = $voucher->value;
                 }

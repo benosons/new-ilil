@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('name', 100);
             $table->string('wa_number', 20);
             $table->string('email', 100)->nullable();
+            $table->string('catatan', 500)->nullable();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->unsignedSmallInteger('quantity')->default(1);
             $table->unsignedInteger('total_price')->default(0);

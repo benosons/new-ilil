@@ -25,6 +25,7 @@ class VoucherController extends Controller
             'code' => 'required|string|max:50|unique:vouchers,code|alpha_dash:ascii|uppercase',
             'type' => 'required|in:fixed,percent',
             'value' => 'required|numeric|min:0',
+            'max_discount' => 'nullable|numeric|min:0',
             'max_uses' => 'nullable|integer|min:1',
             'expires_at' => 'nullable|date|after:today',
             'is_active' => 'boolean',
@@ -47,6 +48,7 @@ class VoucherController extends Controller
             'code' => 'required|string|max:50|alpha_dash:ascii|uppercase|unique:vouchers,code,' . $voucher->id,
             'type' => 'required|in:fixed,percent',
             'value' => 'required|numeric|min:0',
+            'max_discount' => 'nullable|numeric|min:0',
             'max_uses' => 'nullable|integer|min:1',
             'expires_at' => 'nullable|date', // Allow keeping exist date or changing
             'is_active' => 'boolean',
