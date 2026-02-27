@@ -12,6 +12,16 @@
             --chip-2-url: url("{{ asset('assets/chips/chip2.png') }}");
             --chip-3-url: url("{{ asset('assets/chips/chip3.png') }}");
         }
+        /* Mobile Performance Optimizations */
+        .chip { will-change: transform; }
+        @media (max-width: 768px) {
+            .grain, .cinema {
+                display: none !important;
+            }
+            .bg-parallax {
+                will-change: transform;
+            }
+        }
     </style>
 
     {{-- Cinematic overlays --}}

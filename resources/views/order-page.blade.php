@@ -12,6 +12,16 @@
             --chip-2-url: url("{{ asset('assets/chips/chip2.png') }}");
             --chip-3-url: url("{{ asset('assets/chips/chip3.png') }}");
         }
+        /* Mobile Performance Optimizations */
+        .chip { will-change: transform; }
+        @media (max-width: 768px) {
+            .grain, .cinema {
+                display: none !important;
+            }
+            .bg-parallax {
+                will-change: transform;
+            }
+        }
     </style>
 
     {{-- Cinematic overlays --}}
@@ -371,6 +381,45 @@
         });
     </script>
     
-    {{-- Parallax Background script is globally handled by app.js --}}
+    {{-- Parallax Background script optimized for Mobile --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const bg = document.getElementById('bg');
+            if (bg) {
+                const isMobile = window.innerWidth < 768;
+                const count = isMobile ? 5 : 18; // Reduced count for mobile
+                
+                for(let i=0; i<count; i++){
+                    const chip = document.createElement('div');
+                    chip.className = `chip chip-${Math.floor(Math.random()*3)+1}`;
+                    chip.style.left = `${Math.random()*100}vw`;
+                    chip.style.top = `${Math.random()*200}vh`; // spread further down
+                    
+                    const scale = isMobile ? (0.3 + Math.random()*0.2) : (0.4 + Math.random()*0.4);
+                    chip.style.transform = `scale(${scale}) rotate(${Math.random()*360}deg)`;
+                    
+                    // Filters (blur) are notoriously slow on mobile GPUs. Only apply to desktop.
+                    if (isMobile) {
+                        chip.style.opacity = `${0.3 + Math.random()*0.3}`;
+                    } else {
+                        chip.style.filter = `blur(${Math.random()*4}px) opacity(${0.5 + Math.random()*0.4})`;
+                    }
+                    bg.appendChild(chip);
+                }
+
+                let ticking = false;
+                window.addEventListener('scroll', () => {
+                    const scrolled = window.scrollY;
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            bg.style.transform = `translateY(${scrolled * 0.4}px)`;
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                }, {passive:true});
+            }
+        });
+    </script>
     @endpush
 @endsection
